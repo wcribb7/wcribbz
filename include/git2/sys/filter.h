@@ -194,7 +194,8 @@ typedef int GIT_CALLBACK(git_filter_apply_fn)(
 	git_filter    *self,
 	void         **payload, /* may be read and/or set */
 	git_buf       *to,
-	const git_buf *from,
+	const char    *from,
+	size_t         from_len,
 	const git_filter_source *src);
 
 /**

@@ -79,15 +79,16 @@ static int wildcard_filter_apply(
 	git_filter     *self,
 	void          **payload,
 	git_buf        *to,
-	const git_buf  *from,
+	const char     *from_cstr,
+	size_t          from_len,
 	const git_filter_source *source)
 {
 	const char *filtername = *payload;
 
 	if (filtername && strcmp(filtername, "wcflip") == 0)
-		return bitflip_filter_apply(self, payload, to, from, source);
+		return bitflip_filter_apply(self, payload, to, from_cstr, from_len, source);
 	else if (filtername && strcmp(filtername, "wcreverse") == 0)
-		return reverse_filter_apply(self, payload, to, from, source);
+		return reverse_filter_apply(self, payload, to, from_cstr, from_len, source);
 
 	cl_fail("Unexpected attribute");
 	return GIT_PASSTHROUGH;

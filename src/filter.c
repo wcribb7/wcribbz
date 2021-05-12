@@ -847,7 +847,8 @@ static int proxy_stream_close(git_writestream *s)
 		proxy_stream->filter,
 		proxy_stream->payload,
 		proxy_stream->output,
-		&proxy_stream->input,
+		proxy_stream->input.ptr,
+		proxy_stream->input.size,
 		proxy_stream->source);
 
 	if (error == GIT_PASSTHROUGH) {

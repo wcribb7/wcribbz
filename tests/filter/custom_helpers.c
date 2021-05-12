@@ -9,10 +9,11 @@ int bitflip_filter_apply(
 	git_filter     *self,
 	void          **payload,
 	git_buf        *to,
-	const git_buf  *from,
+	const char     *from,
+	size_t          from_len,
 	const git_filter_source *source)
 {
-	const unsigned char *src = (const unsigned char *)from->ptr;
+	const unsigned char *src = (const unsigned char *)from;
 	unsigned char *dst;
 	size_t i;
 
@@ -22,17 +23,17 @@ int bitflip_filter_apply(
 	cl_assert_equal_i(
 		0, git__strncmp("hero", git_filter_source_path(source), 4));
 
-	if (!from->size)
+	if (!from_len)
 		return 0;
 
-	cl_git_pass(git_buf_grow(to, from->size));
+	cl_git_pass(git_buf_grow(to, from_len));
 
 	dst = (unsigned char *)to->ptr;
 
-	for (i = 0; i < from->size; i++)
+	for (i = 0; i < from_len; i++)
 		dst[i] = VERY_SECURE_ENCRYPTION(src[i]);
 
-	to->size = from->size;
+	to->size = from_len;
 
 	return 0;
 }
@@ -60,11 +61,12 @@ int reverse_filter_apply(
 	git_filter     *self,
 	void          **payload,
 	git_buf        *to,
-	const git_buf  *from,
+	const char     *from,
+	size_t          from_len,
 	const git_filter_source *source)
 {
-	const unsigned char *src = (const unsigned char *)from->ptr;
-	const unsigned char *end = src + from->size;
+	const unsigned char *src = (const unsigned char *)from;
+	const unsigned char *end = src + from_len;
 	unsigned char *dst;
 
 	GIT_UNUSED(self); GIT_UNUSED(payload); GIT_UNUSED(source);
@@ -73,17 +75,17 @@ int reverse_filter_apply(
 	cl_assert_equal_i(
 		0, git__strncmp("hero", git_filter_source_path(source), 4));
 
-	if (!from->size)
+	if (!from_len)
 		return 0;
 
-	cl_git_pass(git_buf_grow(to, from->size));
+	cl_git_pass(git_buf_grow(to, from_len));
 
-	dst = (unsigned char *)to->ptr + from->size - 1;
+	dst = (unsigned char *)to->ptr + from_len - 1;
 
 	while (src < end)
 		*dst-- = *src++;
 
-	to->size = from->size;
+	to->size = from_len;
 
 	return 0;
 }
