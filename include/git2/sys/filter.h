@@ -197,6 +197,12 @@ typedef int GIT_CALLBACK(git_filter_apply_fn)(
 	const git_buf *from,
 	const git_filter_source *src);
 
+/**
+ * Callback to perform the data filtering in a streaming manner.
+ *
+ * Specified as `filter.stream`, this is a callback that filters data
+ * in a streaming manner.
+ */
 typedef int GIT_CALLBACK(git_filter_stream_fn)(
 	git_writestream **out,
 	git_filter *self,
