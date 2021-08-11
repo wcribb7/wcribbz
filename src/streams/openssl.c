@@ -7,6 +7,7 @@
 
 #include "streams/openssl.h"
 #include "streams/openssl_legacy.h"
+#include "streams/openssl_dynamic.h"
 
 #ifdef GIT_OPENSSL
 
@@ -27,10 +28,12 @@
 # include <netinet/in.h>
 #endif
 
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/x509v3.h>
-#include <openssl/bio.h>
+#ifndef GIT_OPENSSL_DYNAMIC
+# include <openssl/ssl.h>
+# include <openssl/err.h>
+# include <openssl/x509v3.h>
+# include <openssl/bio.h>
+#endif
 
 SSL_CTX *git__ssl_ctx;
 
@@ -93,6 +96,11 @@ int git_openssl_stream_global_init(void)
 	ssl_opts |= SSL_OP_NO_COMPRESSION;
 #endif
 
+#ifdef GIT_OPENSSL_DYNAMIC
+	if (git_openssl_stream_dynamic_init() < 0)
+		return -1;
+#endif
+
 #ifdef VALGRIND
 	/* Swap in our own allocator functions that initialize allocated memory */
 	if (!allocators_initialized &&
@@ -139,7 +147,7 @@ error:
 	return -1;
 }
 
-#ifndef GIT_OPENSSL_LEGACY
+#if !defined(GIT_OPENSSL_LEGACY) && !defined(GIT_OPENSSL_DYNAMIC)
 int git_openssl_set_locking(void)
 {
 # ifdef GIT_THREADS
