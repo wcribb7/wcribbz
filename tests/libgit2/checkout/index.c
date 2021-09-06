@@ -60,7 +60,7 @@ void test_checkout_index__can_create_missing_files(void)
 	cl_assert_equal_i(false, git_fs_path_isfile("./testrepo/branch_file.txt"));
 	cl_assert_equal_i(false, git_fs_path_isfile("./testrepo/new.txt"));
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -80,7 +80,6 @@ void test_checkout_index__can_remove_untracked_files(void)
 	cl_assert_equal_i(true, git_fs_path_isdir("./testrepo/dir/subdir/subsubdir"));
 
 	opts.checkout_strategy =
-		GIT_CHECKOUT_SAFE |
 		GIT_CHECKOUT_RECREATE_MISSING |
 		GIT_CHECKOUT_REMOVE_UNTRACKED;
 
@@ -156,7 +155,7 @@ void test_checkout_index__honor_the_specified_pathspecs(void)
 	cl_assert_equal_i(false, git_fs_path_isfile("./testrepo/branch_file.txt"));
 	cl_assert_equal_i(false, git_fs_path_isfile("./testrepo/new.txt"));
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -175,7 +174,7 @@ void test_checkout_index__honor_the_gitattributes_directives(void)
 	cl_git_mkfile("./testrepo/.gitattributes", attributes);
 	cl_repo_set_bool(g_repo, "core.autocrlf", false);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -193,7 +192,7 @@ void test_checkout_index__honor_coreautocrlf_setting_set_to_true(void)
 	cl_git_pass(p_unlink("./testrepo/.gitattributes"));
 	cl_repo_set_bool(g_repo, "core.autocrlf", true);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -287,7 +286,7 @@ void test_checkout_index__coresymlinks_set_to_true_fails_when_unsupported(void)
 
 	cl_repo_set_bool(g_repo, "core.symlinks", true);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 	cl_git_fail(git_checkout_index(g_repo, NULL, &opts));
 }
 
@@ -303,7 +302,7 @@ void test_checkout_index__honor_coresymlinks_setting_set_to_true(void)
 
 	cl_repo_set_bool(g_repo, "core.symlinks", true);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -320,7 +319,7 @@ void test_checkout_index__honor_coresymlinks_setting_set_to_false(void)
 
 	cl_repo_set_bool(g_repo, "core.symlinks", false);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -336,7 +335,7 @@ void test_checkout_index__donot_overwrite_modified_file_by_default(void)
 	/* set this up to not return an error code on conflicts, but it
 	 * still will not have permission to overwrite anything...
 	 */
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_ALLOW_CONFLICTS;
+	opts.checkout_strategy = GIT_CHECKOUT_ALLOW_CONFLICTS;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
 
@@ -362,7 +361,7 @@ void test_checkout_index__options_disable_filters(void)
 
 	cl_git_mkfile("./testrepo/.gitattributes", "*.txt text eol=crlf\n");
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 	opts.disable_filters = false;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
@@ -393,7 +392,7 @@ void test_checkout_index__options_dir_modes(void)
 
 	reset_index_to_treeish((git_object *)commit);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 	opts.dir_mode = 0701;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
@@ -420,7 +419,7 @@ void test_checkout_index__options_override_file_modes(void)
 	if (!cl_is_chmod_supported())
 		return;
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 	opts.file_mode = 0700;
 
 	cl_git_pass(git_checkout_index(g_repo, NULL, &opts));
@@ -485,7 +484,7 @@ void test_checkout_index__can_notify_of_skipped_files(void)
 	data.file = "new.txt";
 	data.sha = "a71586c1dfe8a71c6cbf6c129f404c5642ff31bd";
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE |
+	opts.checkout_strategy =
 		GIT_CHECKOUT_RECREATE_MISSING |
 		GIT_CHECKOUT_ALLOW_CONFLICTS;
 	opts.notify_flags = GIT_CHECKOUT_NOTIFY_CONFLICT;
@@ -525,7 +524,6 @@ void test_checkout_index__wont_notify_of_expected_line_ending_changes(void)
 	cl_git_mkfile("./testrepo/new.txt", "my new file\r\n");
 
 	opts.checkout_strategy =
-		GIT_CHECKOUT_SAFE |
 		GIT_CHECKOUT_RECREATE_MISSING |
 		GIT_CHECKOUT_ALLOW_CONFLICTS;
 	opts.notify_flags = GIT_CHECKOUT_NOTIFY_CONFLICT;
@@ -547,7 +545,7 @@ void test_checkout_index__calls_progress_callback(void)
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 	int calls = 0;
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 	opts.progress_cb = checkout_progress_counter;
 	opts.progress_payload = &calls;
 
@@ -582,7 +580,6 @@ void test_checkout_index__can_overcome_name_clashes(void)
 	cl_assert(git_fs_path_isfile("./testrepo/path0/file0"));
 
 	opts.checkout_strategy =
-		GIT_CHECKOUT_SAFE |
 		GIT_CHECKOUT_RECREATE_MISSING |
 		GIT_CHECKOUT_ALLOW_CONFLICTS;
 	cl_git_pass(git_checkout_index(g_repo, index, &opts));
@@ -634,7 +631,6 @@ void test_checkout_index__can_update_prefixed_files(void)
 	cl_git_pass(p_mkdir("./testrepo/branch_file.txt.after", 0777));
 
 	opts.checkout_strategy =
-		GIT_CHECKOUT_SAFE |
 		GIT_CHECKOUT_RECREATE_MISSING |
 		GIT_CHECKOUT_REMOVE_UNTRACKED;
 
@@ -685,7 +681,7 @@ void test_checkout_index__target_directory(void)
 	checkout_counts cts;
 	memset(&cts, 0, sizeof(cts));
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE |
+	opts.checkout_strategy =
 		GIT_CHECKOUT_RECREATE_MISSING;
 	opts.target_directory = "alternative";
 	cl_assert(!git_fs_path_isdir("alternative"));
@@ -730,7 +726,7 @@ void test_checkout_index__target_directory_from_bare(void)
 	cl_git_pass(git_index_write(index));
 	git_index_free(index);
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE |
+	opts.checkout_strategy =
 		GIT_CHECKOUT_RECREATE_MISSING;
 
 	opts.notify_flags = GIT_CHECKOUT_NOTIFY_ALL;
@@ -769,7 +765,7 @@ void test_checkout_index__can_get_repo_from_index(void)
 	cl_assert_equal_i(false, git_fs_path_isfile("./testrepo/branch_file.txt"));
 	cl_assert_equal_i(false, git_fs_path_isfile("./testrepo/new.txt"));
 
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING;
+	opts.checkout_strategy = GIT_CHECKOUT_RECREATE_MISSING;
 
 	cl_git_pass(git_repository_index(&index, g_repo));
 

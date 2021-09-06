@@ -302,17 +302,17 @@ static int checkout_action_no_wd(
 		*action = CHECKOUT_ACTION_IF(RECREATE_MISSING, UPDATE_BLOB, NONE);
 		break;
 	case GIT_DELTA_ADDED:    /* case 2 or 28 (and 5 but not really) */
-		*action = CHECKOUT_ACTION_IF(SAFE, UPDATE_BLOB, NONE);
+		*action = CHECKOUT_ACTION__UPDATE_BLOB;
 		break;
 	case GIT_DELTA_MODIFIED: /* case 13 (and 35 but not really) */
 		*action = CHECKOUT_ACTION_IF(RECREATE_MISSING, UPDATE_BLOB, CONFLICT);
 		break;
 	case GIT_DELTA_TYPECHANGE: /* case 21 (B->T) and 28 (T->B)*/
 		if (delta->new_file.mode == GIT_FILEMODE_TREE)
-			*action = CHECKOUT_ACTION_IF(SAFE, UPDATE_BLOB, NONE);
+			*action = CHECKOUT_ACTION__UPDATE_BLOB;
 		break;
 	case GIT_DELTA_DELETED: /* case 8 or 25 */
-		*action = CHECKOUT_ACTION_IF(SAFE, REMOVE, NONE);
+		*action = CHECKOUT_ACTION__REMOVE;
 		break;
 	default: /* impossible */
 		break;
@@ -512,14 +512,14 @@ static int checkout_action_with_wd(
 		if (checkout_is_workdir_modified(data, &delta->old_file, &delta->new_file, wd))
 			*action = CHECKOUT_ACTION_IF(FORCE, REMOVE, CONFLICT);
 		else
-			*action = CHECKOUT_ACTION_IF(SAFE, REMOVE, NONE);
+			*action = CHECKOUT_ACTION__REMOVE;
 		break;
 	case GIT_DELTA_MODIFIED: /* case 16, 17, 18 (or 36 but not really) */
 		if (wd->mode != GIT_FILEMODE_COMMIT &&
 			checkout_is_workdir_modified(data, &delta->old_file, &delta->new_file, wd))
 			*action = CHECKOUT_ACTION_IF(FORCE, UPDATE_BLOB, CONFLICT);
 		else
-			*action = CHECKOUT_ACTION_IF(SAFE, UPDATE_BLOB, NONE);
+			*action = CHECKOUT_ACTION__UPDATE_BLOB;
 		break;
 	case GIT_DELTA_TYPECHANGE: /* case 22, 23, 29, 30 */
 		if (delta->old_file.mode == GIT_FILEMODE_TREE) {
@@ -527,13 +527,13 @@ static int checkout_action_with_wd(
 				/* either deleting items in old tree will delete the wd dir,
 				 * or we'll get a conflict when we attempt blob update...
 				 */
-				*action = CHECKOUT_ACTION_IF(SAFE, UPDATE_BLOB, NONE);
+				*action = CHECKOUT_ACTION__UPDATE_BLOB;
 			else if (wd->mode == GIT_FILEMODE_COMMIT) {
 				/* workdir is possibly a "phantom" submodule - treat as a
 				 * tree if the only submodule info came from the config
 				 */
 				if (submodule_is_config_only(data, wd->path))
-					*action = CHECKOUT_ACTION_IF(SAFE, UPDATE_BLOB, NONE);
+					*action = CHECKOUT_ACTION__UPDATE_BLOB;
 				else
 					*action = CHECKOUT_ACTION_IF(FORCE, REMOVE_AND_UPDATE, CONFLICT);
 			} else
@@ -542,7 +542,7 @@ static int checkout_action_with_wd(
 		else if (checkout_is_workdir_modified(data, &delta->old_file, &delta->new_file, wd))
 			*action = CHECKOUT_ACTION_IF(FORCE, REMOVE_AND_UPDATE, CONFLICT);
 		else
-			*action = CHECKOUT_ACTION_IF(SAFE, REMOVE_AND_UPDATE, NONE);
+			*action = CHECKOUT_ACTION__REMOVE_AND_UPDATE;
 
 		/* don't update if the typechange is to a tree */
 		if (delta->new_file.mode == GIT_FILEMODE_TREE)
@@ -627,7 +627,7 @@ static int checkout_action_with_wd_dir(
 			 * directory if is it left empty, so we can defer removing the
 			 * dir and it will succeed if no children are left.
 			 */
-			*action = CHECKOUT_ACTION_IF(SAFE, UPDATE_BLOB, NONE);
+			*action = CHECKOUT_ACTION__UPDATE_BLOB;
 		}
 		else if (delta->new_file.mode != GIT_FILEMODE_TREE)
 			/* For typechange to dir, dir is already created so no action */
@@ -2432,14 +2432,12 @@ static int checkout_data_init(
 
 	/* if you are forcing, allow all safe updates, plus recreate missing */
 	if ((data->opts.checkout_strategy & GIT_CHECKOUT_FORCE) != 0)
-		data->opts.checkout_strategy |= GIT_CHECKOUT_SAFE |
-			GIT_CHECKOUT_RECREATE_MISSING;
+		data->opts.checkout_strategy |= GIT_CHECKOUT_RECREATE_MISSING;
 
 	/* if the repository does not actually have an index file, then this
 	 * is an initial checkout (perhaps from clone), so we allow safe updates
 	 */
-	if (!data->index->on_disk &&
-		(data->opts.checkout_strategy & GIT_CHECKOUT_SAFE) != 0)
+	if (!data->index->on_disk)
 		data->opts.checkout_strategy |= GIT_CHECKOUT_RECREATE_MISSING;
 
 	data->strategy = data->opts.checkout_strategy;
