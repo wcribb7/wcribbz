@@ -87,7 +87,7 @@ int git_hash_buf(git_oid *out, const void *data, size_t len)
 	return error;
 }
 
-int git_hash_vec(git_oid *out, git_buf_vec *vec, size_t n)
+int git_hash_vec(git_oid *out, git_str_vec *vec, size_t n)
 {
 	git_hash_ctx ctx;
 	size_t i;

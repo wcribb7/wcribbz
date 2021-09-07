@@ -44,12 +44,18 @@ the NUL terminator).
 In other words, if a `git_buf` contains the string `foo` then the memory
 buffer will be { `f`, `o`, `o`, `\0` } and the size will be `3`.
 
-Callers _should_ initialize the buffer with `GIT_BUF_INIT` or by setting
-all the members to `0` before passing a pointer to the buffer to
-libgit2.  Callers must call `git_buf_dispose` when they have finished.
+Callers _must_ initialize the buffer with `GIT_BUF_INIT` (or by setting
+all the members to `0`) when it is created, before passing a pointer
+to the buffer to libgit2 for the first time.
+
+Subsequent calls to libgit2 APIs that take a buffer can re-use a
+buffer that was previously used.  The buffer will be cleared and the
+new data will be rewritten into the buffer.  This allows callers to
+reduce the number of allocations performed by the library.
+
+Callers must call `git_buf_dispose` when they have finished.
 
 Note that the deprecated `git_diff_format_email` API does not follow
-this behavior; it _requires_ initial calls to initialize a buffer with
-`GIT_BUF_INIT`.  Subsequent calls may pass the same buffer and it
-will concatenate data to it.  Users should move to the new `git_email`
+this behavior; subsequent calls will concatenate data to the buffer
+instead of rewriting it.  Users should move to the new `git_email`
 APIs that follow the `git_buf` standards.

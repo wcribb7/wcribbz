@@ -11,7 +11,6 @@
 
 #include "git2.h"
 
-#include "buffer.h"
 #include "common.h"
 #include "futils.h"
 #include "hash.h"
@@ -33,7 +32,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
 	git_midx_file idx = {{0}};
 	git_midx_entry e;
-	git_buf midx_buf = GIT_BUF_INIT;
+	git_str midx_buf = GIT_BUF_INIT;
 	git_oid oid = {{0}};
 	bool append_hash = false;
 
@@ -50,7 +49,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	size -= 4;
 
 	if (append_hash) {
-		if (git_buf_init(&midx_buf, size + sizeof(oid)) < 0)
+		if (git_str_init(&midx_buf, size + sizeof(oid)) < 0)
 			goto cleanup;
 		if (git_hash_buf(&oid, data, size) < 0) {
 			fprintf(stderr, "Failed to compute the SHA1 hash\n");
@@ -59,10 +58,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		memcpy(midx_buf.ptr, data, size);
 		memcpy(midx_buf.ptr + size, &oid, sizeof(oid));
 	} else {
-		git_buf_attach_notowned(&midx_buf, (char *)data, size);
+		git_str_attach_notowned(&midx_buf, (char *)data, size);
 	}
 
-	if (git_midx_parse(&idx, (const unsigned char *)git_buf_cstr(&midx_buf), git_buf_len(&midx_buf)) < 0)
+	if (git_midx_parse(&idx, (const unsigned char *)git_str_cstr(&midx_buf), git_str_len(&midx_buf)) < 0)
 		goto cleanup;
 
 	/* Search for any oid, just to exercise that codepath. */
@@ -71,6 +70,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 cleanup:
 	git_midx_close(&idx);
-	git_buf_dispose(&midx_buf);
+	git_str_dispose(&midx_buf);
 	return 0;
 }

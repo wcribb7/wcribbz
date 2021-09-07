@@ -15,7 +15,7 @@
 typedef struct {
 	void *data;
 	size_t len;
-} git_buf_vec;
+} git_str_vec;
 
 typedef enum {
 	GIT_HASH_ALGO_UNKNOWN = 0,
@@ -41,6 +41,6 @@ int git_hash_update(git_hash_ctx *c, const void *data, size_t len);
 int git_hash_final(git_oid *out, git_hash_ctx *c);
 
 int git_hash_buf(git_oid *out, const void *data, size_t len);
-int git_hash_vec(git_oid *out, git_buf_vec *vec, size_t n);
+int git_hash_vec(git_oid *out, git_str_vec *vec, size_t n);
 
 #endif
