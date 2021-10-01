@@ -1,5 +1,5 @@
-add_library(git2internal OBJECT)
-set_target_properties(git2internal PROPERTIES C_STANDARD 90)
+add_library(libgit2 OBJECT)
+set_target_properties(libgit2 PROPERTIES C_STANDARD 90)
 
 
 if(DEBUG_POOL)
@@ -31,13 +31,12 @@ set(LIBGIT2_PC_REQUIRES "")
 set(LIBGIT2_PC_LIBS "")
 
 set(LIBGIT2_INCLUDES
-	"${CMAKE_CURRENT_BINARY_DIR}"
+        "${libgit2_BINARY_DIR}/src"
+	"${libgit2_SOURCE_DIR}/src/util"
 	"${libgit2_SOURCE_DIR}/src/libgit2"
 	"${libgit2_SOURCE_DIR}/include")
 set(LIBGIT2_SYSTEM_INCLUDES "")
 set(LIBGIT2_LIBS "")
-
-enable_warnings(missing-declarations)
 
 if(HAVE_FUTIMENS)
 	set(GIT_USE_FUTIMENS 1)
@@ -48,19 +47,19 @@ check_prototype_definition(qsort_r
 	"void qsort_r(void *base, size_t nmemb, size_t size, void *thunk, int (*compar)(void *, const void *, const void *))"
 	"" "stdlib.h" HAVE_QSORT_R_BSD)
 if(HAVE_QSORT_R_BSD)
-	target_compile_definitions(git2internal PRIVATE HAVE_QSORT_R_BSD)
+	target_compile_definitions(libgit2 PRIVATE HAVE_QSORT_R_BSD)
 endif()
 
 check_prototype_definition(qsort_r
 	"void qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *, void *), void *arg)"
 	"" "stdlib.h" HAVE_QSORT_R_GNU)
 if(HAVE_QSORT_R_GNU)
-	target_compile_definitions(git2internal PRIVATE HAVE_QSORT_R_GNU)
+	target_compile_definitions(libgit2 PRIVATE HAVE_QSORT_R_GNU)
 endif()
 
 check_function_exists(qsort_s HAVE_QSORT_S)
 if(HAVE_QSORT_S)
-	target_compile_definitions(git2internal PRIVATE HAVE_QSORT_S)
+	target_compile_definitions(libgit2 PRIVATE HAVE_QSORT_S)
 endif()
 
 # Find required dependencies
@@ -91,7 +90,7 @@ add_feature_info(threadsafe THREADSAFE "threadsafe support")
 if(WIN32 AND EMBED_SSH_PATH)
 	file(GLOB SRC_SSH "${EMBED_SSH_PATH}/src/*.c")
 	list(SORT SRC_SSH)
-	target_sources(git2internal PRIVATE ${SRC_SSH})
+	target_sources(libgit2 PRIVATE ${SRC_SSH})
 
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES "${EMBED_SSH_PATH}/include")
 	file(WRITE "${EMBED_SSH_PATH}/src/libssh2_config.h" "#define HAVE_WINCNG\n#define LIBSSH2_WINCNG\n#include \"../win32/libssh2_config.h\"")
@@ -117,8 +116,7 @@ if(WIN32 AND WINHTTP)
 endif()
 
 include(SelectHTTPSBackend)
-include(SelectHashes)
-target_sources(git2internal PRIVATE ${SRC_SHA1})
+target_sources(libgit2 PRIVATE ${SRC_SHA1})
 
 # Specify regular expression implementation
 find_package(PCRE)
@@ -261,7 +259,6 @@ endif()
 add_feature_info(ntlmclient GIT_NTLM "NTLM authentication support for Unix")
 
 # Optional external dependency: GSSAPI
-
 include(SelectGSSAPI)
 
 # Optional external dependency: iconv
@@ -276,36 +273,13 @@ if(ICONV_FOUND)
 endif()
 add_feature_info(iconv GIT_USE_ICONV "iconv encoding conversion support")
 
-
-if(THREADSAFE)
-	if(NOT WIN32)
-		find_package(Threads REQUIRED)
-	endif()
-
-	set(GIT_THREADS 1)
-endif()
-
-if(USE_NSEC)
-	set(GIT_USE_NSEC 1)
-endif()
-
-if(HAVE_STRUCT_STAT_ST_MTIM)
-	set(GIT_USE_STAT_MTIM 1)
-elseif(HAVE_STRUCT_STAT_ST_MTIMESPEC)
-	set(GIT_USE_STAT_MTIMESPEC 1)
-elseif(HAVE_STRUCT_STAT_ST_MTIME_NSEC)
-	set(GIT_USE_STAT_MTIME_NSEC 1)
-endif()
-
-target_compile_definitions(git2internal PRIVATE _FILE_OFFSET_BITS=64)
-
 # Collect sourcefiles
 file(GLOB SRC_H
 	"${libgit2_SOURCE_DIR}/include/git2.h"
 	"${libgit2_SOURCE_DIR}/include/git2/*.h"
 	"${libgit2_SOURCE_DIR}/include/git2/sys/*.h")
 list(SORT SRC_H)
-target_sources(git2internal PRIVATE ${SRC_H})
+target_sources(libgit2 PRIVATE ${SRC_H})
 
 # On Windows use specific platform sources
 if(WIN32 AND NOT CYGWIN)
@@ -313,17 +287,13 @@ if(WIN32 AND NOT CYGWIN)
 
 	file(GLOB SRC_OS win32/*.c win32/*.h)
 	list(SORT SRC_OS)
-	target_sources(git2internal PRIVATE ${SRC_OS})
+	target_sources(libgit2 PRIVATE ${SRC_OS})
 elseif(AMIGA)
-	target_compile_definitions(git2internal PRIVATE NO_ADDRINFO NO_READDIR_R NO_MMAP)
+	target_compile_definitions(libgit2 PRIVATE NO_ADDRINFO NO_READDIR_R NO_MMAP)
 else()
 	file(GLOB SRC_OS unix/*.c unix/*.h)
 	list(SORT SRC_OS)
-	target_sources(git2internal PRIVATE ${SRC_OS})
-endif()
-
-if(USE_LEAK_CHECKER STREQUAL "valgrind")
-	target_compile_definitions(git2internal PRIVATE VALGRIND)
+	target_sources(libgit2 PRIVATE ${SRC_OS})
 endif()
 
 file(GLOB SRC_GIT2 *.c *.h
@@ -332,7 +302,7 @@ file(GLOB SRC_GIT2 *.c *.h
 	transports/*.c transports/*.h
 	xdiff/*.c xdiff/*.h)
 list(SORT SRC_GIT2)
-target_sources(git2internal PRIVATE ${SRC_GIT2})
+target_sources(libgit2 PRIVATE ${SRC_GIT2})
 
 if(APPLE)
 	# The old Secure Transport API has been deprecated in macOS 10.15.
@@ -346,24 +316,11 @@ if(MSVC)
 	set_source_files_properties(xdiff/xutils.c PROPERTIES COMPILE_FLAGS -WX-)
 endif()
 
-# Determine architecture of the machine
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(GIT_ARCH_64 1)
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-	set(GIT_ARCH_32 1)
-elseif(CMAKE_SIZEOF_VOID_P)
-	message(FATAL_ERROR "Unsupported architecture (pointer size is ${CMAKE_SIZEOF_VOID_P} bytes)")
-else()
-	message(FATAL_ERROR "Unsupported architecture (CMAKE_SIZEOF_VOID_P is unset)")
-endif()
+ide_split_sources(libgit2)
+list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:libgit2>)
 
-configure_file(features.h.in git2/sys/features.h)
-
-ide_split_sources(git2internal)
-list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:git2internal>)
-
-target_include_directories(git2internal PRIVATE ${LIBGIT2_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
-target_include_directories(git2internal SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
+target_include_directories(libgit2 PRIVATE ${LIBGIT2_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
+target_include_directories(libgit2 SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
 
 set(LIBGIT2_OBJECTS ${LIBGIT2_OBJECTS} PARENT_SCOPE)
 set(LIBGIT2_INCLUDES ${LIBGIT2_INCLUDES} PARENT_SCOPE)
@@ -427,6 +384,8 @@ install(TARGETS git2
 )
 install(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+configure_file(features.h.in features.h)
 
 # export these variables for the test framework; it links our object
 # files directly (instead of linking to libgit2.so) so that it can
