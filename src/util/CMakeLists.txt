@@ -29,5 +29,11 @@ add_library(util OBJECT ${UTIL_SOURCES})
 list(APPEND UTIL_OBJECTS ${COMMON_OBJECTS})
 list(APPEND UTIL_OBJECTS $<TARGET_OBJECTS:util>)
 
+get_property(LIBGIT2_INCLUDES GLOBAL PROPERTY libgit2_includes)
+get_property(LIBGIT2_SYSTEM_INCLUDES GLOBAL PROPERTY libgit2_system_includes)
+
+include_directories(${LIBGIT2_INCLUDES})
+include_directories(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
+
 target_include_directories(util PRIVATE ${UTIL_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
 target_include_directories(util SYSTEM PRIVATE ${UTIL_SYSTEM_INCLUDES})
