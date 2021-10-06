@@ -279,5 +279,7 @@ set_property(GLOBAL PROPERTY libgit2_includes ${LIBGIT2_INCLUDES})
 set_property(GLOBAL PROPERTY libgit2_system_includes ${LIBGIT2_SYSTEM_INCLUDES})
 set_property(GLOBAL PROPERTY libgit2_libs ${LIBGIT2_LIBS})
 
+configure_file(features.h.in generated/features.h)
+
 add_subdirectory(util)
 add_subdirectory(libgit2)

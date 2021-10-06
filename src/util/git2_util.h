@@ -8,7 +8,7 @@
 #define INCLUDE_git2_util_h__
 
 #ifndef LIBGIT2_NO_FEATURES_H
-# include "libgit2/features.h"
+# include "generated/features.h"
 #endif
 
 #include "git2/common.h"

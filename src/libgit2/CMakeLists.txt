@@ -116,8 +116,6 @@ install(TARGETS git2
 install(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-configure_file(features.h.in features.h)
-
 # export these variables for the test framework; it links our object
 # files directly (instead of linking to libgit2.so) so that it can
 # test private and internal functions.
