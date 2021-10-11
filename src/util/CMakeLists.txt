@@ -10,8 +10,7 @@ file(GLOB SRC_UTIL_H
 	"${libgit2_SOURCE_DIR}/include/git2/sys/*.h")
 list(SORT SRC_UTIL_H)
 
-file(GLOB SRC_UTIL alloc.c futils.c hash.c net.c pool.c posix.c runtime.c str.c strmap.c tsort.c util.c varint.c vector.c allocators/*.c allocators/*.h)
-
+file(GLOB SRC_UTIL alloc.c futils.c hash.c net.c path.c pool.c posix.c regexp.c runtime.c str.c strmap.c tsort.c util.c varint.c vector.c allocators/*.c allocators/*.h)
 #file(GLOB SRC_UTIL *.c *.h allocators/*.c allocators/*.h)
 list(SORT SRC_UTIL)
 

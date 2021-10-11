@@ -8,7 +8,8 @@
 #include "path.h"
 
 #include "posix.h"
-#include "repository.h"
+#include "utf8.h"
+
 #ifdef GIT_WIN32
 #include "win32/posix.h"
 #include "win32/w32_buffer.h"

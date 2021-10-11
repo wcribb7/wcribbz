@@ -49,6 +49,7 @@ endif()
 
 ide_split_sources(libgit2)
 list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:libgit2>)
+list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:util>)
 
 target_include_directories(libgit2 PRIVATE ${LIBGIT2_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
 target_include_directories(libgit2 SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
