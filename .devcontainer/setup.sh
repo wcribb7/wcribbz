@@ -7,3 +7,4 @@ sudo apt-get -y --no-install-recommends install cmake
 mkdir build
 cd build
 cmake ..
+cmake --build . --parallel
