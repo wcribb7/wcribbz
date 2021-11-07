@@ -6,8 +6,8 @@ if(NOT PYTHONINTERP_FOUND)
 	                     "Make sure python is available, or pass -DBUILD_TESTS=OFF to skip building the tests")
 ENDIF()
 
-get_property(LIBGIT2_OBJECTS GLOBAL PROPERTY libgit2_objects)
-get_property(LIBGIT2_INCLUDES GLOBAL PROPERTY libgit2_includes)
+get_property(LIBGIT2_DEPENDENCY_OBJECTS GLOBAL PROPERTY libgit2_objects)
+get_property(LIBGIT2_DEPENDENCY_INCLUDES GLOBAL PROPERTY libgit2_includes)
 get_property(LIBGIT2_SYSTEM_INCLUDES GLOBAL PROPERTY libgit2_system_includes)
 get_property(LIBGIT2_SYSTEM_LIBS GLOBAL PROPERTY libgit2_system_libs)
 
@@ -21,7 +21,7 @@ add_definitions(-D_FILE_OFFSET_BITS=64)
 # Ensure that we do not use deprecated functions internally
 add_definitions(-DGIT_DEPRECATE_HARD)
 
-include_directories(${CLAR_PATH} ${libgit2_BINARY_DIR}/src/libgit2)
+include_directories(${CLAR_PATH} ${libgit2_BINARY_DIR}/src)
 file(GLOB_RECURSE SRC_TEST ${CLAR_PATH}/*/*.c ${CLAR_PATH}/*/*.h)
 set(SRC_CLAR "main.c" "clar_libgit2.c" "clar_libgit2_trace.c" "clar_libgit2_timer.c" "clar.c")
 
@@ -49,7 +49,7 @@ add_executable(libgit2_tests ${SRC_CLAR} ${SRC_TEST} ${LIBGIT2_OBJECTS})
 set_target_properties(libgit2_tests PROPERTIES C_STANDARD 90)
 set_target_properties(libgit2_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
 
-target_include_directories(libgit2_tests PRIVATE ../src/libgit2 PUBLIC ../include)
+target_include_directories(libgit2_tests PRIVATE ../src/libgit2 ../src/util PUBLIC ../include)
 target_link_libraries(libgit2_tests ${LIBGIT2_SYSTEM_LIBS})
 ide_split_sources(libgit2_tests)
 

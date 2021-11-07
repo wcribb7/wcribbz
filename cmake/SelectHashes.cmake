@@ -37,7 +37,6 @@ elseif(USE_SHA1 STREQUAL "CommonCrypto")
 	set(GIT_SHA1_COMMON_CRYPTO 1)
 elseif(USE_SHA1 STREQUAL "mbedTLS")
 	set(GIT_SHA1_MBEDTLS 1)
-	file(GLOB SRC_SHA1 hash/sha1/mbedtls.*)
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES ${MBEDTLS_INCLUDE_DIR})
 	list(APPEND LIBGIT2_SYSTEM_LIBS ${MBEDTLS_LIBRARIES})
 	# mbedTLS has no pkgconfig file, hence we can't require it
