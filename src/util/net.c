@@ -6,7 +6,6 @@
  */
 
 #include "net.h"
-#include "netops.h"
 
 #include <ctype.h>
 #include "git2/errors.h"

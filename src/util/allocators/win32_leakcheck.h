@@ -8,7 +8,7 @@
 #ifndef INCLUDE_allocators_win32_leakcheck_h
 #define INCLUDE_allocators_win32_leakcheck_h
 
-#include "common.h"
+#include "git2_util.h"
 
 #include "alloc.h"
 

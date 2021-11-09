@@ -7,8 +7,9 @@
 
 #include "fs_path.h"
 
+#include "git2_util.h"
+#include "futils.h"
 #include "posix.h"
-#include "repository.h"
 #ifdef GIT_WIN32
 #include "win32/posix.h"
 #include "win32/w32_buffer.h"
@@ -20,6 +21,13 @@
 #endif
 #include <stdio.h>
 #include <ctype.h>
+
+#define ensure_error_set(code) do { \
+		const git_error *e = git_error_last(); \
+		if (!e || !e->message) \
+			git_error_set(e ? e->klass : GIT_ERROR_CALLBACK, \
+				"filesystem callback returned %d", code); \
+	} while(0)
 
 static int dos_drive_prefix_length(const char *path)
 {
@@ -530,7 +538,7 @@ int git_fs_path_walk_up(
 	if (!scan) {
 		error = cb(data, "");
 		if (error)
-			git_error_set_after_callback(error);
+			ensure_error_set(error);
 		return error;
 	}
 
@@ -543,7 +551,7 @@ int git_fs_path_walk_up(
 		iter.ptr[scan] = oldc;
 
 		if (error) {
-			git_error_set_after_callback(error);
+			ensure_error_set(error);
 			break;
 		}
 
@@ -563,7 +571,7 @@ int git_fs_path_walk_up(
 	if (!error && stop == 0 && iter.ptr[0] != '/') {
 		error = cb(data, "");
 		if (error)
-			git_error_set_after_callback(error);
+			ensure_error_set(error);
 	}
 
 	return error;
@@ -1164,7 +1172,7 @@ int git_fs_path_direach(
 		/* Only set our own error if the callback did not set one already */
 		if (error != 0) {
 			if (!git_error_last())
-				git_error_set_after_callback(error);
+				ensure_error_set(error);
 
 			break;
 		}
