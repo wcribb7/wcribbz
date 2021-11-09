@@ -5,7 +5,7 @@
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-#include "common.h"
+#include "git2_util.h"
 
 #if !defined(GIT_THREADS)
 
