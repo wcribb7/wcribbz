@@ -7,7 +7,7 @@
 #ifndef INCLUDE_futils_h__
 #define INCLUDE_futils_h__
 
-#include "common.h"
+#include "git2_util.h"
 
 #include "map.h"
 #include "posix.h"

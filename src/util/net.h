@@ -7,7 +7,7 @@
 #ifndef INCLUDE_net_h__
 #define INCLUDE_net_h__
 
-#include "common.h"
+#include "git2_util.h"
 
 typedef struct git_net_url {
 	char *scheme;

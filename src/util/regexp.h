@@ -8,7 +8,7 @@
 #ifndef INCLUDE_regexp_h__
 #define INCLUDE_regexp_h__
 
-#include "common.h"
+#include "git2_util.h"
 
 #if defined(GIT_REGEX_BUILTIN) || defined(GIT_REGEX_PCRE)
 # include "pcre.h"

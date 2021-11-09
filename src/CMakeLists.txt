@@ -1,6 +1,8 @@
 add_library(git2internal OBJECT)
 set_target_properties(git2internal PROPERTIES C_STANDARD 90)
 
+add_subdirectory(util)
+list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:util>)
 
 if(DEPRECATE_HARD)
         add_definitions(-DGIT_DEPRECATE_HARD)
@@ -111,8 +113,6 @@ if(WIN32 AND USE_WINHTTP)
 endif()
 
 include(SelectHTTPSBackend)
-include(SelectHashes)
-target_sources(git2internal PRIVATE ${SRC_SHA1})
 
 # Specify regular expression implementation
 find_package(PCRE)
@@ -301,21 +301,6 @@ file(GLOB SRC_H
 list(SORT SRC_H)
 target_sources(git2internal PRIVATE ${SRC_H})
 
-# On Windows use specific platform sources
-if(WIN32 AND NOT CYGWIN)
-	set(WIN_RC "util/win32/git2.rc")
-
-	file(GLOB SRC_OS util/win32/*.c util/win32/*.h)
-	list(SORT SRC_OS)
-	target_sources(git2internal PRIVATE ${SRC_OS})
-elseif(AMIGA)
-	target_compile_definitions(git2internal PRIVATE NO_ADDRINFO NO_READDIR_R NO_MMAP)
-else()
-	file(GLOB SRC_OS util/unix/*.c util/unix/*.h)
-	list(SORT SRC_OS)
-	target_sources(git2internal PRIVATE ${SRC_OS})
-endif()
-
 if(USE_LEAK_CHECKER STREQUAL "valgrind")
 	target_compile_definitions(git2internal PRIVATE VALGRIND)
 endif()
@@ -326,10 +311,6 @@ file(GLOB SRC_GIT2 libgit2/*.c libgit2/*.h
 	libgit2/xdiff/*.c libgit2/xdiff/*.h)
 list(SORT SRC_GIT2)
 target_sources(git2internal PRIVATE ${SRC_GIT2})
-
-file(GLOB SRC_UTIL util/*.c util/*.h util/allocators/*.c util/allocators/*.h)
-list(SORT SRC_UTIL)
-target_sources(git2internal PRIVATE ${SRC_UTIL})
 
 if(APPLE)
 	# The old Secure Transport API has been deprecated in macOS 10.15.
