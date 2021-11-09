@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.5.1)
 
 project(libgit2 VERSION "1.3.0" LANGUAGES C)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 # Add find modules to the path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${libgit2_SOURCE_DIR}/cmake")
 
