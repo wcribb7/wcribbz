@@ -7,7 +7,7 @@
 #ifndef INCLUDE_varint_h__
 #define INCLUDE_varint_h__
 
-#include "common.h"
+#include "git2_util.h"
 
 #include <stdint.h>
 

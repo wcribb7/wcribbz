@@ -12,7 +12,7 @@
 #endif
 
 #include "str.h"
-#include "common.h"
+#include "git2_util.h"
 #include "strnlen.h"
 #include "thread.h"
 

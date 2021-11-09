@@ -22,8 +22,8 @@ endif()
 if(USE_SHA1 STREQUAL "CollisionDetection")
 	set(GIT_SHA1_COLLISIONDETECT 1)
 	add_definitions(-DSHA1DC_NO_STANDARD_INCLUDES=1)
-	add_definitions(-DSHA1DC_CUSTOM_INCLUDE_SHA1_C=\"common.h\")
-	add_definitions(-DSHA1DC_CUSTOM_INCLUDE_UBC_CHECK_C=\"common.h\")
+	add_definitions(-DSHA1DC_CUSTOM_INCLUDE_SHA1_C=\"git2_util.h\")
+	add_definitions(-DSHA1DC_CUSTOM_INCLUDE_UBC_CHECK_C=\"git2_util.h\")
 elseif(USE_SHA1 STREQUAL "OpenSSL")
 	# OPENSSL_FOUND should already be set, we're checking USE_HTTPS
 

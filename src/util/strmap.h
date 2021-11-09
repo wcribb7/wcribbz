@@ -7,7 +7,7 @@
 #ifndef INCLUDE_strmap_h__
 #define INCLUDE_strmap_h__
 
-#include "common.h"
+#include "git2_util.h"
 
 /** A map with C strings as key. */
 typedef struct kh_str_s git_strmap;

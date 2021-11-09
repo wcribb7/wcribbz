@@ -1,57 +1,77 @@
+# libgit2_tests
+
+add_executable(libgit2_tests)
+
+set(TEST_INCLUDES
+	"${CMAKE_BINARY_DIR}/src"
+	"${libgit2_SOURCE_DIR}/src/libgit2"
+	"${libgit2_SOURCE_DIR}/src/util"
+	"${libgit2_SOURCE_DIR}/include")
+
+file(GLOB_RECURSE TEST_SRC */*.c */*.h)
+
+#
+# Locate python so that we can generate the clar test data
+#
+
 set(Python_ADDITIONAL_VERSIONS 3 2.7)
 find_package(PythonInterp)
 
 if(NOT PYTHONINTERP_FOUND)
 	message(FATAL_ERROR "Could not find a python interpeter, which is needed to build the tests. "
-	                     "Make sure python is available, or pass -DBUILD_TESTS=OFF to skip building the tests")
-ENDIF()
+	                     "Make sure python is available, or pass -DBUILD_TESTS=OFF to skip building the tests.")
+endif()
 
-get_property(LIBGIT2_DEPENDENCY_OBJECTS GLOBAL PROPERTY libgit2_objects)
-get_property(LIBGIT2_DEPENDENCY_INCLUDES GLOBAL PROPERTY libgit2_includes)
+#
+# Load dependency information
+#
+
+get_property(LIBGIT2_DEPENDENCY_INCLUDES GLOBAL PROPERTY libgit2_dependency_includes)
+get_property(LIBGIT2_DEPENDENCY_OBJECTS GLOBAL PROPERTY libgit2_dependency_objects)
 get_property(LIBGIT2_SYSTEM_INCLUDES GLOBAL PROPERTY libgit2_system_includes)
 get_property(LIBGIT2_SYSTEM_LIBS GLOBAL PROPERTY libgit2_system_libs)
 
-set(CLAR_FIXTURES "${CMAKE_CURRENT_SOURCE_DIR}/resources/")
+#
+# Include clar
+#
+
 set(CLAR_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-add_definitions(-DCLAR_FIXTURE_PATH=\"${CLAR_FIXTURES}\")
-add_definitions(-DCLAR_TMPDIR=\"libgit2_tests\")
-add_definitions(-DCLAR_WIN32_LONGPATHS)
-add_definitions(-D_FILE_OFFSET_BITS=64)
+set(CLAR_FIXTURES "${CLAR_PATH}/resources")
+set(CLAR_SUITE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
 
-# Ensure that we do not use deprecated functions internally
-add_definitions(-DGIT_DEPRECATE_HARD)
-
-include_directories(${CLAR_PATH} ${libgit2_BINARY_DIR}/src)
-file(GLOB_RECURSE SRC_TEST ${CLAR_PATH}/*/*.c ${CLAR_PATH}/*/*.h)
-set(SRC_CLAR "main.c" "clar_libgit2.c" "clar_libgit2_trace.c" "clar_libgit2_timer.c" "clar.c")
-
-if(MSVC_IDE)
-	list(APPEND SRC_CLAR "precompiled.c")
-endif()
+include_directories(${CLAR_PATH})
+set(TEST_SRC_CLAR "main.c" "clar.c" "clar_libgit2.c" "clar_libgit2_trace.c" "clar_libgit2_timer.c")
 
 add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/clar.suite ${CMAKE_CURRENT_BINARY_DIR}/clar_suite.h
-	COMMAND ${PYTHON_EXECUTABLE} generate.py -o "${CMAKE_CURRENT_BINARY_DIR}" -f -xonline -xstress -xperf .
-	DEPENDS ${SRC_TEST}
+	OUTPUT ${CLAR_SUITE_PATH}/clar.suite ${CLAR_SUITE_PATH}/clar_suite.h
+	COMMAND ${PYTHON_EXECUTABLE} generate.py -o "${CLAR_SUITE_PATH}" -f -xonline -xstress -xperf .
+	DEPENDS ${TEST_SRC}
 	WORKING_DIRECTORY ${CLAR_PATH}
 )
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set_source_files_properties(
 	${CLAR_PATH}/clar.c
-	PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/clar.suite)
+	PROPERTIES OBJECT_DEPENDS ${CLAR_SUITE_PATH}/clar.suite)
 
-include_directories(${LIBGIT2_DEPENDENCY_INCLUDES})
-include_directories(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
+#
+# Preprocessor definitions
+#
 
-add_executable(libgit2_tests ${SRC_CLAR} ${SRC_TEST} ${LIBGIT2_OBJECTS})
+if(USE_LEAK_CHECKER STREQUAL "valgrind")
+        target_compile_definitions(libgit2_tests PRIVATE VALGRIND)
+endif()
 
-set_target_properties(libgit2_tests PROPERTIES C_STANDARD 90)
-set_target_properties(libgit2_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+target_compile_definitions(libgit2_tests PRIVATE CLAR_FIXTURE_PATH=\"${CLAR_FIXTURES}\")
+target_compile_definitions(libgit2_tests PRIVATE CLAR_TMPDIR=\"libgit2_tests\")
+target_compile_definitions(libgit2_tests PRIVATE CLAR_WIN32_LONGPATHS)
+target_compile_definitions(libgit2_tests PRIVATE _FILE_OFFSET_BITS=64)
 
-target_include_directories(libgit2_tests PRIVATE ../src/libgit2 ../src/util PUBLIC ../include)
-target_link_libraries(libgit2_tests ${LIBGIT2_SYSTEM_LIBS})
-ide_split_sources(libgit2_tests)
+# ensure that we do not use deprecated functions internally
+target_compile_definitions(libgit2_tests PRIVATE GIT_DEPRECATE_HARD)
+
+#
+# Platform specific options
+#
 
 #
 # Old versions of gcc require us to declare our test functions; don't do
@@ -62,10 +82,25 @@ if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
 endif()
 
 if(MSVC_IDE)
-	# Precompiled headers
+	list(APPEND TEST_SRC_CLAR "precompiled.c")
 	set_target_properties(libgit2_tests PROPERTIES COMPILE_FLAGS "/Yuprecompiled.h /FIprecompiled.h")
 	set_source_files_properties("precompiled.c" COMPILE_FLAGS "/Ycprecompiled.h")
 endif()
+
+#
+# The test runner binary
+#
+
+target_sources(libgit2_tests PRIVATE ${TEST_SRC_CLAR} ${TEST_SRC} $<TARGET_OBJECTS:libgit2> $<TARGET_OBJECTS:util> ${LIBGIT2_DEPENDENCY_OBJECTS})
+
+target_include_directories(libgit2_tests PRIVATE ${CLAR_SUITE_PATH} ${TEST_INCLUDES})
+target_link_libraries(libgit2_tests ${LIBGIT2_SYSTEM_LIBS})
+
+set_target_properties(libgit2_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+
+#
+# Add tests
+#
 
 function(ADD_CLAR_TEST name)
 	if(NOT USE_LEAK_CHECKER STREQUAL "OFF")

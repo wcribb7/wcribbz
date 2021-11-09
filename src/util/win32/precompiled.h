@@ -1,4 +1,4 @@
-#include "common.h"
+#include "git2_util.h"
 
 #include <errno.h>
 #include <limits.h>

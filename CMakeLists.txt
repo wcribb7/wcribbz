@@ -97,12 +97,13 @@ include(FindPkgLibraries)
 include(FindThreads)
 include(FindStatNsec)
 include(Findfutimens)
+include(SelectHashes)
 include(GNUInstallDirs)
 include(IdeSplitSources)
 include(FeatureSummary)
 include(EnableWarnings)
 include(DefaultCFlags)
-
+include(PkgBuildConfig)
 
 #
 # Subdirectories
