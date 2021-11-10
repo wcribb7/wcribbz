@@ -42,7 +42,7 @@ option(DEBUG_STRICT_OPEN       "Enable path validation in open"                 
 
 # Output options
 option(SONAME                  "Set the (SO)VERSION of the target"                      ON)
-option(LIBGIT2_FILENAME        "Name of the produced binary"                           OFF)
+   set(LIBGIT2_FILENAME        "git2" CACHE STRING "Name of the produced binary")
 option(DEPRECATE_HARD          "Do not include deprecated functions in the library"    OFF)
 
 # Compilation options
@@ -105,7 +105,8 @@ include(IdeSplitSources)
 include(FeatureSummary)
 include(EnableWarnings)
 include(DefaultCFlags)
-
+include(PkgBuildConfig)
+include(SanitizeBool)
 
 #
 # Subdirectories

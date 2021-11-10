@@ -22,15 +22,6 @@ file(GLOB LIBGIT2_SRC *.c *.h
 list(SORT LIBGIT2_SRC)
 
 #
-# Load dependency information
-#
-
-get_property(LIBGIT2_DEPENDENCY_INCLUDES GLOBAL PROPERTY libgit2_dependency_includes)
-get_property(LIBGIT2_DEPENDENCY_OBJECTS GLOBAL PROPERTY libgit2_dependency_objects)
-get_property(LIBGIT2_SYSTEM_INCLUDES GLOBAL PROPERTY libgit2_system_includes)
-get_property(LIBGIT2_SYSTEM_LIBS GLOBAL PROPERTY libgit2_system_libs)
-
-#
 # Platform specific options
 #
 
@@ -47,9 +38,21 @@ if(MSVC)
         set_source_files_properties(xdiff/xutils.c PROPERTIES COMPILE_FLAGS -WX-)
 endif()
 
+if(MSVC_IDE)
+	# precompiled headers
+	set_target_properties(git2 PROPERTIES COMPILE_FLAGS "/Yuprecompiled.h /FIprecompiled.h")
+	set_source_files_properties(libgit2/win32/precompiled.c COMPILE_FLAGS "/Ycprecompiled.h")
+endif()
+
 if(APPLE)
 	# the old Secure Transport API has been deprecated in macOS 10.15.
 	set_source_files_properties(streams/stransport.c PROPERTIES COMPILE_FLAGS -Wno-deprecated)
+endif()
+
+#TODO: still necessary?
+if(MSVC AND GIT_ARCH_64 AND NOT BUILD_SHARED_LIBS)
+	# workaround for Cmake bug #0011240 (see http://public.kitware.com/Bug/view.php?id=11240)
+	set_target_properties(git2 PROPERTIES STATIC_LIBRARY_FLAGS "/MACHINE:x64")
 endif()
 
 #
@@ -75,3 +78,32 @@ target_include_directories(libgit2 SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
 
 add_library(libgit2public $<TARGET_OBJECTS:libgit2> $<TARGET_OBJECTS:util> ${LIBGIT2_DEPENDENCY_OBJECTS})
 target_link_libraries(libgit2public ${LIBGIT2_SYSTEM_LIBS})
+
+set_target_properties(libgit2public PROPERTIES OUTPUT_NAME ${LIBGIT2_FILENAME})
+
+set_target_properties(libgit2public PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+set_target_properties(libgit2public PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+set_target_properties(libgit2public PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+
+if(SONAME)
+	set_target_properties(libgit2public PROPERTIES VERSION ${libgit2_VERSION})
+	set_target_properties(libgit2public PROPERTIES SOVERSION "${libgit2_VERSION_MAJOR}.${libgit2_VERSION_MINOR}")
+endif()
+
+pkg_build_config(NAME libgit2
+	VERSION ${libgit2_VERSION}
+	DESCRIPTION "A cross-platform linkable library implementation of Git"
+	LIBS_SELF ${LIBGIT2_FILENAME}
+	PRIVATE_LIBS ${LIBGIT2_PC_LIBS}
+	REQUIRES ${LIBGIT2_PC_REQUIRES})
+
+#
+# Installation
+#
+
+install(TARGETS libgit2public
+       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
