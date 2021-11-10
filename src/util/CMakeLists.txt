@@ -8,24 +8,19 @@ set(UTIL_INCLUDES
 	"${libgit2_SOURCE_DIR}/src/util"
 	"${libgit2_SOURCE_DIR}/include")
 
-file(GLOB SRC_UTIL *.c *.h allocators/*.c allocators/*.h)
-list(SORT SRC_UTIL)
-target_sources(util PRIVATE ${SRC_UTIL})
+file(GLOB UTIL_SRC *.c *.h allocators/*.c allocators/*.h)
+list(SORT UTIL_SRC)
 
 #
 # Platform specific sources
 #
 
 if(WIN32 AND NOT CYGWIN)
-	set(WIN_RC "win32/git2.rc")
-
-	file(GLOB SRC_OS win32/*.c win32/*.h)
-	list(SORT SRC_OS)
-	target_sources(util PRIVATE ${SRC_OS})
+	file(GLOB UTIL_SRC_OS win32/*.c win32/*.h)
+	list(SORT UTIL_SRC_OS)
 elseif(NOT AMIGA)
-	file(GLOB SRC_OS unix/*.c unix/*.h)
-	list(SORT SRC_OS)
-	target_sources(util PRIVATE ${SRC_OS})
+	file(GLOB UTIL_SRC_OS unix/*.c unix/*.h)
+	list(SORT UTIL_SRC_OS)
 endif()
 
 if(AMIGA)
@@ -37,23 +32,23 @@ endif()
 #
 
 if(USE_SHA1 STREQUAL "CollisionDetection")
-	file(GLOB SRC_HASH hash/sha1/collisiondetect.* hash/sha1/sha1dc/*)
+	file(GLOB UTIL_SRC_HASH hash/sha1/collisiondetect.* hash/sha1/sha1dc/*)
 elseif(USE_SHA1 STREQUAL "OpenSSL")
-	file(GLOB SRC_HASH hash/sha1/openssl.*)
+	file(GLOB UTIL_SRC_HASH hash/sha1/openssl.*)
 elseif(USE_SHA1 STREQUAL "CommonCrypto")
-	file(GLOB SRC_HASH hash/sha1/common_crypto.*)
+	file(GLOB UTIL_SRC_HASH hash/sha1/common_crypto.*)
 elseif(USE_SHA1 STREQUAL "mbedTLS")
-	file(GLOB SRC_HASH hash/sha1/mbedtls.*)
+	file(GLOB UTIL_SRC_HASH hash/sha1/mbedtls.*)
 elseif(USE_SHA1 STREQUAL "Win32")
-	file(GLOB SRC_HASH hash/sha1/win32.*)
+	file(GLOB UTIL_SRC_HASH hash/sha1/win32.*)
 elseif(USE_SHA1 STREQUAL "Generic")
-	file(GLOB SRC_HASH hash/sha1/generic.*)
+	file(GLOB UTIL_SRC_HASH hash/sha1/generic.*)
 else()
 	message(FATAL_ERROR "Asked for unknown SHA1 backend: ${USE_SHA1}")
 endif()
 
-list(APPEND SRC_HASH "hash/sha1.h")
-list(SORT SRC_HASH)
+list(APPEND UTIL_SRC_HASH "hash/sha1.h")
+list(SORT UTIL_SRC_HASH)
 
 #
 # Include builtin dependencies
@@ -89,7 +84,7 @@ if(USE_LEAK_CHECKER STREQUAL "valgrind")
 	target_compile_definitions(util PRIVATE VALGRIND)
 endif()
 
-target_sources(util PRIVATE ${SRC_UTIL} ${SRC_OS} ${SRC_HASH})
+target_sources(util PRIVATE ${UTIL_SRC} ${UTIL_SRC_OS} ${UTIL_SRC_HASH})
 
 target_include_directories(util PRIVATE ${UTIL_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
 target_include_directories(util SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
