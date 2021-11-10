@@ -23,6 +23,8 @@ elseif(NOT AMIGA)
 	list(SORT UTIL_SRC_OS)
 endif()
 
+target_compile_definitions(util PRIVATE _FILE_OFFSET_BITS=64)
+
 if(AMIGA)
 	target_compile_definitions(util PRIVATE NO_ADDRINFO NO_READDIR_R NO_MMAP)
 endif()
@@ -51,33 +53,11 @@ list(APPEND UTIL_SRC_HASH "hash/sha1.h")
 list(SORT UTIL_SRC_HASH)
 
 #
-# Include builtin dependencies
-#
-
-if(NOT (USE_HTTP_PARSER STREQUAL "system"))
-	list(APPEND UTIL_INCLUDES "${libgit2_SOURCE_DIR}/deps/http-parser")
-	list(APPEND UTIL_OBJECTS "$<TARGET_OBJECTS:http-parser>")
-endif()
-
-if(REGEX_BACKEND STREQUAL "builtin")
-	list(APPEND UTIL_INCLUDES "${libgit2_SOURCE_DIR}/deps/pcre")
-	list(APPEND UTIL_OBJECTS $<TARGET_OBJECTS:pcre>)
-endif()
-
-if(USE_BUNDLED_ZLIB STREQUAL "Chromium")
-	list(APPEND UTIL_INCLUDES "${libgit2_SOURCE_DIR}/deps/chromium-zlib")
-	list(APPEND UTIL_OBJECTS $<TARGET_OBJECTS:chromium_zlib>)
-elseif(USE_BUNDLED_ZLIB)
-	list(APPEND UTIL_INCLUDES "${libgit2_SOURCE_DIR}/deps/zlib")
-	list(APPEND UTIL_OBJECTS $<TARGET_OBJECTS:zlib>)
-endif()
-
-#
 # Preprocessor definitions
 #
 
 if(DEPRECATE_HARD)
-	add_definitions(-DGIT_DEPRECATE_HARD)
+	target_compile_definitions(util PRIVATE GIT_DEPRECATE_HARD)
 endif()
 
 if(USE_LEAK_CHECKER STREQUAL "valgrind")
@@ -86,5 +66,5 @@ endif()
 
 target_sources(util PRIVATE ${UTIL_SRC} ${UTIL_SRC_OS} ${UTIL_SRC_HASH})
 
-target_include_directories(util PRIVATE ${UTIL_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
+target_include_directories(util PRIVATE ${UTIL_INCLUDES} ${LIBGIT2_DEPENDENCY_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
 target_include_directories(util SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})

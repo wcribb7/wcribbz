@@ -1,8 +1,3 @@
-add_library(git2internal OBJECT)
-set_target_properties(git2internal PROPERTIES C_STANDARD 90)
-
-add_subdirectory(util)
-list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:util>)
 
 if(DEPRECATE_HARD)
         add_definitions(-DGIT_DEPRECATE_HARD)
@@ -42,7 +37,7 @@ set(LIBGIT2_INCLUDES
 	"${libgit2_SOURCE_DIR}/src/util"
 	"${libgit2_SOURCE_DIR}/include")
 set(LIBGIT2_SYSTEM_INCLUDES "")
-set(LIBGIT2_LIBS "")
+set(LIBGIT2_SYSTEM_LIBS "")
 
 if(HAVE_FUTIMENS)
 	set(GIT_USE_FUTIMENS 1)
@@ -62,37 +57,37 @@ check_function_exists(qsort_s GIT_QSORT_S)
 # Find required dependencies
 
 if(WIN32)
-	list(APPEND LIBGIT2_LIBS ws2_32)
+	list(APPEND LIBGIT2_SYSTEM_LIBS ws2_32)
 elseif(CMAKE_SYSTEM_NAME MATCHES "(Solaris|SunOS)")
-	list(APPEND LIBGIT2_LIBS socket nsl)
+	list(APPEND LIBGIT2_SYSTEM_LIBS socket nsl)
 	list(APPEND LIBGIT2_PC_LIBS "-lsocket" "-lnsl")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
-	list(APPEND LIBGIT2_LIBS network)
+	list(APPEND LIBGIT2_SYSTEM_LIBS network)
 	list(APPEND LIBGIT2_PC_LIBS "-lnetwork")
 endif()
 
 check_library_exists(rt clock_gettime "time.h" NEED_LIBRT)
 if(NEED_LIBRT)
-	list(APPEND LIBGIT2_LIBS rt)
+	list(APPEND LIBGIT2_SYSTEM_LIBS rt)
 	list(APPEND LIBGIT2_PC_LIBS "-lrt")
 endif()
 
 if(USE_THREADS)
-	list(APPEND LIBGIT2_LIBS ${CMAKE_THREAD_LIBS_INIT})
+	list(APPEND LIBGIT2_SYSTEM_LIBS ${CMAKE_THREAD_LIBS_INIT})
 	list(APPEND LIBGIT2_PC_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
 add_feature_info(threadsafe USE_THREADS "threadsafe support")
 
 
-if(WIN32 AND EMBED_SSH_PATH)
-	file(GLOB SRC_SSH "${EMBED_SSH_PATH}/src/*.c")
-	list(SORT SRC_SSH)
-	target_sources(git2internal PRIVATE ${SRC_SSH})
-
-	list(APPEND LIBGIT2_SYSTEM_INCLUDES "${EMBED_SSH_PATH}/include")
-	file(WRITE "${EMBED_SSH_PATH}/src/libssh2_config.h" "#define HAVE_WINCNG\n#define LIBSSH2_WINCNG\n#include \"../win32/libssh2_config.h\"")
-	set(GIT_SSH 1)
-endif()
+#if(WIN32 AND EMBED_SSH_PATH)
+#	file(GLOB SRC_SSH "${EMBED_SSH_PATH}/src/*.c")
+#	list(SORT SRC_SSH)
+#	target_sources(git2internal PRIVATE ${SRC_SSH})
+#
+#	list(APPEND LIBGIT2_SYSTEM_INCLUDES "${EMBED_SSH_PATH}/include")
+#	file(WRITE "${EMBED_SSH_PATH}/src/libssh2_config.h" "#define HAVE_WINCNG\n#define LIBSSH2_WINCNG\n#include \"../win32/libssh2_config.h\"")
+#	set(GIT_SSH 1)
+#endif()
 
 if(WIN32 AND WINHTTP)
 	set(GIT_WINHTTP 1)
@@ -101,14 +96,14 @@ if(WIN32 AND WINHTTP)
 	# we have to include a private header and generate our own import library
 	if(MINGW)
 		add_subdirectory("${libgit2_SOURCE_DIR}/deps/winhttp" "${libgit2_BINARY_DIR}/deps/winhttp")
-		list(APPEND LIBGIT2_LIBS winhttp)
-		list(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/winhttp")
+		list(APPEND LIBGIT2_SYSTEM_LIBS winhttp)
+		list(APPEND LIBGIT2_DEPENDENCY_INCLUDES "${libgit2_SOURCE_DIR}/deps/winhttp")
 	else()
-		list(APPEND LIBGIT2_LIBS "winhttp")
+		list(APPEND LIBGIT2_SYSTEM_LIBS "winhttp")
 		list(APPEND LIBGIT2_PC_LIBS "-lwinhttp")
 	endif()
 
-	list(APPEND LIBGIT2_LIBS "rpcrt4" "crypt32" "ole32")
+	list(APPEND LIBGIT2_SYSTEM_LIBS "rpcrt4" "crypt32" "ole32")
 	list(APPEND LIBGIT2_PC_LIBS "-lrpcrt4" "-lcrypt32" "-lole32")
 endif()
 
@@ -143,14 +138,14 @@ elseif(REGEX_BACKEND STREQUAL "pcre2")
 	set(GIT_REGEX_PCRE2 1)
 
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES ${PCRE2_INCLUDE_DIRS})
-	list(APPEND LIBGIT2_LIBS ${PCRE2_LIBRARIES})
+	list(APPEND LIBGIT2_SYSTEM_LIBS ${PCRE2_LIBRARIES})
 	list(APPEND LIBGIT2_PC_REQUIRES "libpcre2-8")
 elseif(REGEX_BACKEND STREQUAL "pcre")
 	add_feature_info(regex ON "using system PCRE")
 	set(GIT_REGEX_PCRE 1)
 
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES ${PCRE_INCLUDE_DIRS})
-	list(APPEND LIBGIT2_LIBS ${PCRE_LIBRARIES})
+	list(APPEND LIBGIT2_SYSTEM_LIBS ${PCRE_LIBRARIES})
 	list(APPEND LIBGIT2_PC_REQUIRES "libpcre")
 elseif(REGEX_BACKEND STREQUAL "regcomp")
 	add_feature_info(regex ON "using system regcomp")
@@ -160,8 +155,8 @@ elseif(REGEX_BACKEND STREQUAL "builtin")
 	set(GIT_REGEX_BUILTIN 1)
 
 	add_subdirectory("${libgit2_SOURCE_DIR}/deps/pcre" "${libgit2_BINARY_DIR}/deps/pcre")
-	list(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/pcre")
-	list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:pcre>)
+	list(APPEND LIBGIT2_DEPENDENCY_INCLUDES "${libgit2_SOURCE_DIR}/deps/pcre")
+	list(APPEND LIBGIT2_DEPENDENCY_OBJECTS $<TARGET_OBJECTS:pcre>)
 else()
 	message(FATAL_ERROR "The REGEX_BACKEND option provided is not supported")
 endif()
@@ -172,7 +167,7 @@ if(USE_HTTP_PARSER STREQUAL "system")
 
 	if(HTTP_PARSER_FOUND AND HTTP_PARSER_VERSION_MAJOR EQUAL 2)
 		list(APPEND LIBGIT2_SYSTEM_INCLUDES ${HTTP_PARSER_INCLUDE_DIRS})
-		list(APPEND LIBGIT2_LIBS ${HTTP_PARSER_LIBRARIES})
+		list(APPEND LIBGIT2_SYSTEM_LIBS ${HTTP_PARSER_LIBRARIES})
 		list(APPEND LIBGIT2_PC_LIBS "-lhttp_parser")
 		add_feature_info(http-parser ON "http-parser support (system)")
 	else()
@@ -181,8 +176,8 @@ if(USE_HTTP_PARSER STREQUAL "system")
 else()
 	message(STATUS "http-parser version 2 was not found or disabled; using bundled 3rd-party sources.")
 	add_subdirectory("${libgit2_SOURCE_DIR}/deps/http-parser" "${libgit2_BINARY_DIR}/deps/http-parser")
-	list(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/http-parser")
-	list(APPEND LIBGIT2_OBJECTS "$<TARGET_OBJECTS:http-parser>")
+	list(APPEND LIBGIT2_DEPENDENCY_INCLUDES "${libgit2_SOURCE_DIR}/deps/http-parser")
+	list(APPEND LIBGIT2_DEPENDENCY_OBJECTS "$<TARGET_OBJECTS:http-parser>")
 	add_feature_info(http-parser ON "http-parser support (bundled)")
 endif()
 
@@ -196,7 +191,7 @@ if(USE_BUNDLED_ZLIB STREQUAL "OFF")
 	find_package(ZLIB)
 	if(ZLIB_FOUND)
 		list(APPEND LIBGIT2_SYSTEM_INCLUDES ${ZLIB_INCLUDE_DIRS})
-		list(APPEND LIBGIT2_LIBS ${ZLIB_LIBRARIES})
+		list(APPEND LIBGIT2_SYSTEM_LIBS ${ZLIB_LIBRARIES})
 		if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
 			list(APPEND LIBGIT2_PC_LIBS "-lz")
 		else()
@@ -209,13 +204,13 @@ if(USE_BUNDLED_ZLIB STREQUAL "OFF")
 endif()
 if(USE_BUNDLED_ZLIB STREQUAL "Chromium")
 	add_subdirectory("${libgit2_SOURCE_DIR}/deps/chromium-zlib" "${libgit2_BINARY_DIR}/deps/chromium-zlib")
-	list(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/chromium-zlib")
-	list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:chromium_zlib>)
+	list(APPEND LIBGIT2_DEPENDENCY_INCLUDES "${libgit2_SOURCE_DIR}/deps/chromium-zlib")
+	list(APPEND LIBGIT2_DEPENDENCY_OBJECTS $<TARGET_OBJECTS:chromium_zlib>)
 	add_feature_info(zlib ON "using (Chromium) bundled zlib")
 elseif(USE_BUNDLED_ZLIB OR NOT ZLIB_FOUND)
 	add_subdirectory("${libgit2_SOURCE_DIR}/deps/zlib" "${libgit2_BINARY_DIR}/deps/zlib")
-	list(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/zlib")
-	list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:zlib>)
+	list(APPEND LIBGIT2_DEPENDENCY_INCLUDES "${libgit2_SOURCE_DIR}/deps/zlib")
+	list(APPEND LIBGIT2_DEPENDENCY_OBJECTS $<TARGET_OBJECTS:zlib>)
 	add_feature_info(zlib ON "using bundled zlib")
 endif()
 
@@ -233,7 +228,7 @@ endif()
 if(LIBSSH2_FOUND)
 	set(GIT_SSH 1)
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES ${LIBSSH2_INCLUDE_DIRS})
-	list(APPEND LIBGIT2_LIBS ${LIBSSH2_LIBRARIES})
+	list(APPEND LIBGIT2_SYSTEM_LIBS ${LIBSSH2_LIBRARIES})
 	list(APPEND LIBGIT2_PC_LIBS ${LIBSSH2_LDFLAGS})
 
 	check_library_exists("${LIBSSH2_LIBRARIES}" libssh2_userauth_publickey_frommemory "${LIBSSH2_LIBRARY_DIRS}" HAVE_LIBSSH2_MEMORY_CREDENTIALS)
@@ -249,8 +244,8 @@ add_feature_info(SSH GIT_SSH "SSH transport support")
 if(USE_NTLMCLIENT)
 	set(GIT_NTLM 1)
 	add_subdirectory("${libgit2_SOURCE_DIR}/deps/ntlmclient" "${libgit2_BINARY_DIR}/deps/ntlmclient")
-	list(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/ntlmclient")
-	list(APPEND LIBGIT2_OBJECTS "$<TARGET_OBJECTS:ntlmclient>")
+	list(APPEND LIBGIT2_DEPENDENCY_INCLUDES "${libgit2_SOURCE_DIR}/deps/ntlmclient")
+	list(APPEND LIBGIT2_DEPENDENCY_OBJECTS "$<TARGET_OBJECTS:ntlmclient>")
 endif()
 add_feature_info(ntlmclient GIT_NTLM "NTLM authentication support for Unix")
 
@@ -265,7 +260,7 @@ endif()
 if(ICONV_FOUND)
 	set(GIT_USE_ICONV 1)
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES ${ICONV_INCLUDE_DIR})
-	list(APPEND LIBGIT2_LIBS ${ICONV_LIBRARIES})
+	list(APPEND LIBGIT2_SYSTEM_LIBS ${ICONV_LIBRARIES})
 	list(APPEND LIBGIT2_PC_LIBS ${ICONV_LIBRARIES})
 endif()
 add_feature_info(iconv GIT_USE_ICONV "iconv encoding conversion support")
@@ -291,38 +286,20 @@ elseif(HAVE_STRUCT_STAT_ST_MTIME_NSEC)
 	set(GIT_USE_STAT_MTIME_NSEC 1)
 endif()
 
-target_compile_definitions(git2internal PRIVATE _FILE_OFFSET_BITS=64)
-
 # Collect sourcefiles
 file(GLOB SRC_H
 	"${libgit2_SOURCE_DIR}/include/git2.h"
 	"${libgit2_SOURCE_DIR}/include/git2/*.h"
 	"${libgit2_SOURCE_DIR}/include/git2/sys/*.h")
 list(SORT SRC_H)
-target_sources(git2internal PRIVATE ${SRC_H})
-
-if(USE_LEAK_CHECKER STREQUAL "valgrind")
-	target_compile_definitions(git2internal PRIVATE VALGRIND)
-endif()
+#target_sources(git2internal PRIVATE ${SRC_H})
 
 file(GLOB SRC_GIT2 libgit2/*.c libgit2/*.h
 	libgit2/streams/*.c libgit2/streams/*.h
 	libgit2/transports/*.c libgit2/transports/*.h
 	libgit2/xdiff/*.c libgit2/xdiff/*.h)
 list(SORT SRC_GIT2)
-target_sources(git2internal PRIVATE ${SRC_GIT2})
-
-if(APPLE)
-	# The old Secure Transport API has been deprecated in macOS 10.15.
-	set_source_files_properties(libgit2/streams/stransport.c PROPERTIES COMPILE_FLAGS -Wno-deprecated)
-endif()
-
-# the xdiff dependency is not (yet) warning-free, disable warnings as
-# errors for the xdiff sources until we've sorted them out
-if(MSVC)
-	set_source_files_properties(libgit2/xdiff/xdiffi.c PROPERTIES COMPILE_FLAGS -WX-)
-	set_source_files_properties(libgit2/xdiff/xutils.c PROPERTIES COMPILE_FLAGS -WX-)
-endif()
+#target_sources(git2internal PRIVATE ${SRC_GIT2})
 
 # Determine architecture of the machine
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -337,50 +314,50 @@ endif()
 
 configure_file(libgit2/features.h.in git2/sys/features.h)
 
-ide_split_sources(git2internal)
-list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:git2internal>)
+#ide_split_sources(git2internal)
+#list(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:git2internal>)
+#
+#target_include_directories(git2internal PRIVATE ${LIBGIT2_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
+#target_include_directories(git2internal SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
+#
+#set(LIBGIT2_OBJECTS ${LIBGIT2_OBJECTS} PARENT_SCOPE)
+#set(LIBGIT2_DEPENDENCY_INCLUDES ${LIBGIT2_DEPENDENCY_INCLUDES} PARENT_SCOPE)
+#set(LIBGIT2_SYSTEM_INCLUDES ${LIBGIT2_SYSTEM_INCLUDES} PARENT_SCOPE)
+#set(LIBGIT2_SYSTEM_LIBS ${LIBGIT2_SYSTEM_LIBS} PARENT_SCOPE)
 
-target_include_directories(git2internal PRIVATE ${LIBGIT2_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
-target_include_directories(git2internal SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
-
-set(LIBGIT2_OBJECTS ${LIBGIT2_OBJECTS} PARENT_SCOPE)
-set(LIBGIT2_INCLUDES ${LIBGIT2_INCLUDES} PARENT_SCOPE)
-set(LIBGIT2_SYSTEM_INCLUDES ${LIBGIT2_SYSTEM_INCLUDES} PARENT_SCOPE)
-set(LIBGIT2_LIBS ${LIBGIT2_LIBS} PARENT_SCOPE)
-
-if(XCODE_VERSION)
-	# This is required for Xcode to actually link the libgit2 library
-	# when using only object libraries.
-	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/dummy.c "")
-	list(APPEND LIBGIT2_OBJECTS ${CMAKE_CURRENT_BINARY_DIR}/dummy.c)
-endif()
+#if(XCODE_VERSION)
+#	# This is required for Xcode to actually link the libgit2 library
+#	# when using only object libraries.
+#	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/dummy.c "")
+#	list(APPEND LIBGIT2_OBJECTS ${CMAKE_CURRENT_BINARY_DIR}/dummy.c)
+#endif()
 
 # Compile and link libgit2
-add_library(git2 ${WIN_RC} ${LIBGIT2_OBJECTS})
-target_link_libraries(git2 ${LIBGIT2_LIBS})
+#add_library(git2 ${WIN_RC} ${LIBGIT2_OBJECTS})
+#target_link_libraries(git2 ${LIBGIT2_SYSTEM_LIBS})
 
-set_target_properties(git2 PROPERTIES C_STANDARD 90)
-set_target_properties(git2 PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
-set_target_properties(git2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
-set_target_properties(git2 PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+#set_target_properties(git2 PROPERTIES C_STANDARD 90)
+#set_target_properties(git2 PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+#set_target_properties(git2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
+#set_target_properties(git2 PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
 
 # Workaround for Cmake bug #0011240 (see http://public.kitware.com/Bug/view.php?id=11240)
 # Win64+MSVC+static libs = linker error
 if(MSVC AND GIT_ARCH_64 AND NOT BUILD_SHARED_LIBS)
-	set_target_properties(git2 PROPERTIES STATIC_LIBRARY_FLAGS "/MACHINE:x64")
+#	set_target_properties(git2 PROPERTIES STATIC_LIBRARY_FLAGS "/MACHINE:x64")
 endif()
 
 ide_split_sources(git2)
 
 if(SONAME)
-	set_target_properties(git2 PROPERTIES VERSION ${libgit2_VERSION})
-	set_target_properties(git2 PROPERTIES SOVERSION "${libgit2_VERSION_MAJOR}.${libgit2_VERSION_MINOR}")
-	if(LIBGIT2_FILENAME)
-		target_compile_definitions(git2 PRIVATE LIBGIT2_FILENAME=\"${LIBGIT2_FILENAME}\")
-		set_target_properties(git2 PROPERTIES OUTPUT_NAME ${LIBGIT2_FILENAME})
-	elseif(DEFINED LIBGIT2_PREFIX)
-		set_target_properties(git2 PROPERTIES PREFIX "${LIBGIT2_PREFIX}")
-	endif()
+#	set_target_properties(git2 PROPERTIES VERSION ${libgit2_VERSION})
+#	set_target_properties(git2 PROPERTIES SOVERSION "${libgit2_VERSION_MAJOR}.${libgit2_VERSION_MINOR}")
+#	if(LIBGIT2_FILENAME)
+#		target_compile_definitions(git2 PRIVATE LIBGIT2_FILENAME=\"${LIBGIT2_FILENAME}\")
+#		set_target_properties(git2 PROPERTIES OUTPUT_NAME ${LIBGIT2_FILENAME})
+#	elseif(DEFINED LIBGIT2_PREFIX)
+#		set_target_properties(git2 PROPERTIES PREFIX "${LIBGIT2_PREFIX}")
+#	endif()
 endif()
 
 pkg_build_config(NAME libgit2
@@ -398,18 +375,21 @@ if(MSVC_IDE)
 endif()
 
 # Install
-install(TARGETS git2
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-install(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(TARGETS git2
+#	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#)
+#install(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # export these variables for the test framework; it links our object
 # files directly (instead of linking to libgit2.so) so that it can
 # test private and internal functions.
-set_property(GLOBAL PROPERTY libgit2_objects ${LIBGIT2_OBJECTS})
-set_property(GLOBAL PROPERTY libgit2_includes ${LIBGIT2_INCLUDES})
+set_property(GLOBAL PROPERTY libgit2_dependency_includes ${LIBGIT2_DEPENDENCY_INCLUDES})
+set_property(GLOBAL PROPERTY libgit2_dependency_objects ${LIBGIT2_DEPENDENCY_OBJECTS})
 set_property(GLOBAL PROPERTY libgit2_system_includes ${LIBGIT2_SYSTEM_INCLUDES})
-set_property(GLOBAL PROPERTY libgit2_libs ${LIBGIT2_LIBS})
+set_property(GLOBAL PROPERTY libgit2_system_libs ${LIBGIT2_SYSTEM_LIBS})
+
+add_subdirectory(libgit2)
+add_subdirectory(util)

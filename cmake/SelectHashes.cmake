@@ -39,7 +39,7 @@ elseif(USE_SHA1 STREQUAL "mbedTLS")
 	set(GIT_SHA1_MBEDTLS 1)
 	file(GLOB SRC_SHA1 hash/sha1/mbedtls.*)
 	list(APPEND LIBGIT2_SYSTEM_INCLUDES ${MBEDTLS_INCLUDE_DIR})
-	list(APPEND LIBGIT2_LIBS ${MBEDTLS_LIBRARIES})
+	list(APPEND LIBGIT2_SYSTEM_LIBS ${MBEDTLS_LIBRARIES})
 	# mbedTLS has no pkgconfig file, hence we can't require it
 	# https://github.com/ARMmbed/mbedtls/issues/228
 	# For now, pass its link flags as our own
