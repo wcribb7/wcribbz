@@ -45,7 +45,7 @@ void test_core_copy__file_in_dir(void)
 	cl_assert(!git_fs_path_isdir("an_dir"));
 }
 
-void assert_hard_link(const char *path)
+static void assert_hard_link(const char *path)
 {
 	/* we assert this by checking that there's more than one link to the file */
 	struct stat st;
