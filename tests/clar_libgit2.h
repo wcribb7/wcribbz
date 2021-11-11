@@ -6,6 +6,12 @@
 #include "common.h"
 #include "posix.h"
 
+/* Old versions of gcc require strict declarations on our tests */
+
+#if defined(__GNUC__) && __GNUC_MAJOR__ < 6
+# include "clar_suite.h"
+#endif
+
 /**
  * Replace for `clar_must_pass` that passes the last library error as the
  * test failure message.

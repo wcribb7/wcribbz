@@ -25,16 +25,18 @@ if(MSVC_IDE)
 endif()
 
 add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/clar.suite
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/clar.suite ${CMAKE_CURRENT_BINARY_DIR}/clar_suite.h
 	COMMAND ${PYTHON_EXECUTABLE} generate.py -o "${CMAKE_CURRENT_BINARY_DIR}" -f -xonline -xstress -xperf .
 	DEPENDS ${SRC_TEST}
-	WORKING_DIRECTORY ${CLAR_PATH}
-)
+	WORKING_DIRECTORY ${CLAR_PATH})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set_source_files_properties(
 	${CLAR_PATH}/clar.c
 	PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/clar.suite)
+set_source_files_properties(
+	${CLAR_PATH}/clar.c
+	PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/clar_suite.h)
 
 include_directories(${LIBGIT2_INCLUDES})
 include_directories(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
