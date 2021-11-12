@@ -36,7 +36,7 @@ set_source_files_properties(
 	${CLAR_PATH}/clar.c
 	PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/clar.suite)
 
-include_directories(${LIBGIT2_INCLUDES})
+include_directories(${LIBGIT2_DEPENDENCY_INCLUDES})
 include_directories(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
 
 add_executable(libgit2_tests ${SRC_CLAR} ${SRC_TEST} ${LIBGIT2_OBJECTS})
@@ -45,7 +45,7 @@ set_target_properties(libgit2_tests PROPERTIES C_STANDARD 90)
 set_target_properties(libgit2_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
 
 target_include_directories(libgit2_tests PRIVATE ../src PUBLIC ../include)
-target_link_libraries(libgit2_tests ${LIBGIT2_LIBS})
+target_link_libraries(libgit2_tests ${LIBGIT2_SYSTEM_LIBS})
 ide_split_sources(libgit2_tests)
 
 #

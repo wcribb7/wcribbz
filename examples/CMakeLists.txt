@@ -1,4 +1,4 @@
-include_directories(${LIBGIT2_INCLUDES})
+include_directories(${LIBGIT2_DEPENDENCY_INCLUDES})
 include_directories(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
 
 file(GLOB LG2_SOURCES *.c *.h)
