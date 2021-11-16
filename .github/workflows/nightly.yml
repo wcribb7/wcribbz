@@ -273,9 +273,6 @@ jobs:
       run: source/ci/setup-${{ matrix.platform.setup-script }}.sh
       shell: bash
       if: matrix.platform.setup-script != ''
-    - name: Setup QEMU
-      run: docker run --rm --privileged multiarch/qemu-user-static:register --reset
-      if: matrix.platform.container.qemu == true
     - name: Download container
       run: |
         "${{ github.workspace }}/source/ci/getcontainer.sh" "${{ matrix.platform.container.name }}" "${{ matrix.platform.container.dockerfile }}"
