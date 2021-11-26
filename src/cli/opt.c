@@ -10,7 +10,7 @@
  * This file was produced by using the `rename.pl` script included with
  * adopt.  The command-line specified was:
  *
- * ./rename.pl cli_opt --filename=opt --include=cli.h --inline=GIT_INLINE --header-guard=CLI_opt_h__ --lowercase-status
+ * ./rename.pl cli_opt --filename=opt --include=cli.h --inline=GIT_INLINE --header-guard=CLI_opt_h__ --lowercase-status --without-usage
  */
 
 #include <stdlib.h>
@@ -280,70 +280,6 @@ int cli_opt_status_fprint(
 		break;
 	}
 
-	return error;
-}
-
-int cli_opt_usage_fprint(
-	FILE *file,
-	const char *command,
-	const cli_opt_spec specs[])
-{
-	const cli_opt_spec *spec;
-	int choice = 0;
-	int error;
-
-	if ((error = fprintf(file, "usage: %s", command)) < 0)
-		goto done;
-
-	for (spec = specs; spec->type; ++spec) {
-		int optional = !(spec->usage & CLI_OPT_USAGE_REQUIRED);
-
-		if (spec->usage & CLI_OPT_USAGE_HIDDEN)
-			continue;
-
-		if (choice)
-			error = fprintf(file, "|");
-		else
-			error = fprintf(file, " ");
-
-		if (error < 0)
-			goto done;
-
-		if (optional && !choice && (error = fprintf(file, "[")) < 0)
-			goto done;
-
-		if (spec->type == CLI_OPT_VALUE && spec->alias)
-			error = fprintf(file, "-%c <%s>", spec->alias, spec->value_name);
-		else if (spec->type == CLI_OPT_VALUE)
-			error = fprintf(file, "--%s=<%s>", spec->name, spec->value_name);
-		else if (spec->type == CLI_OPT_VALUE_OPTIONAL && spec->alias)
-			error = fprintf(file, "-%c [<%s>]", spec->alias, spec->value_name);
-		else if (spec->type == CLI_OPT_VALUE_OPTIONAL)
-			error = fprintf(file, "--%s[=<%s>]", spec->name, spec->value_name);
-		else if (spec->type == CLI_OPT_ARG)
-			error = fprintf(file, "<%s>", spec->value_name);
-		else if (spec->type == CLI_OPT_ARGS)
-			error = fprintf(file, "<%s...>", spec->value_name);
-		else if (spec->type == CLI_OPT_LITERAL)
-			error = fprintf(file, "--");
-		else if (spec->alias && !(spec->usage & CLI_OPT_USAGE_SHOW_LONG))
-			error = fprintf(file, "-%c", spec->alias);
-		else
-			error = fprintf(file, "--%s", spec->name);
-
-		if (error < 0)
-			goto done;
-
-		choice = !!((spec+1)->usage & CLI_OPT_USAGE_CHOICE);
-
-		if (optional && !choice && (error = fprintf(file, "]")) < 0)
-			goto done;
-	}
-
-	error = fprintf(file, "\n");
-
-done:
-	error = (error < 0) ? -1 : 0;
 	return error;
 }
 

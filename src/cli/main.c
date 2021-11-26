@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	while (cli_opt_parser_next(&opt, &optparser)) {
 		if (!opt.spec) {
 			cli_opt_status_fprint(stderr, &opt);
-			cli_opt_usage_fprint(stderr, PROGRAM_NAME, common_opts);
+			cli_opt_usage_fprint(stderr, PROGRAM_NAME, NULL, common_opts);
 			error = 129;
 			goto done;
 		}
