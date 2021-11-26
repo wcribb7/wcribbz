@@ -21,3 +21,7 @@ A git-compatible command-line interface that uses libgit2.
 
    This is done because commands are linked into the main cli.
 
+3. Commands should accept a `--help` option that displays their help
+   information.  This will be shown when a user runs `<command> --help` and
+   when a user runs `help <command>`.
+

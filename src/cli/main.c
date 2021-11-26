@@ -33,6 +33,8 @@ int main(int argc, char **argv)
 	const cli_cmd_spec *cmd;
 	cli_opt_parser optparser;
 	cli_opt opt;
+	char *help_args[3] = { NULL };
+	int help_args_len;
 	int args_len = 0;
 	int error = 0;
 
@@ -68,10 +70,19 @@ int main(int argc, char **argv)
 		goto done;
 	}
 
-	/* If there was no command, we want to invoke "help" */
+	/*
+	 * If `--help <command>` is specified, delegate to that command's
+	 * `--help` option.  If no command is specified, run the `help`
+	 * command.  Do this by updating the args to emulate that behavior.
+	 */
 	if (!command || show_help) {
-		cli_opt_usage_fprint(stdout, PROGRAM_NAME, NULL, cli_common_opts);
-		goto done;
+		help_args[0] = command ? (char *)command : "help";
+		help_args[1] = command ? "--help" : NULL;
+		help_args_len = command ? 2 : 1;
+
+		command = help_args[0];
+		args = help_args;
+		args_len = help_args_len;
 	}
 
 	if ((cmd = cli_cmd_spec_byname(command)) == NULL) {
