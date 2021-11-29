@@ -23,4 +23,8 @@ int cli_opt_usage_fprint(
 	const char *subcommand,
 	const cli_opt_spec specs[]);
 
+int cli_opt_help_fprint(
+	FILE *file,
+	const cli_opt_spec specs[]);
+
 #endif /* CLI_opt_usage_h__ */

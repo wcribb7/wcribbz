@@ -8,6 +8,28 @@
 #include "cli.h"
 #include "str.h"
 
+static int print_spec_name(git_str *out, const cli_opt_spec *spec)
+{
+	if (spec->type == CLI_OPT_VALUE && spec->alias)
+		return git_str_printf(out, "-%c <%s>", spec->alias, spec->value_name);
+	else if (spec->type == CLI_OPT_VALUE)
+		return git_str_printf(out, "--%s=<%s>", spec->name, spec->value_name);
+	else if (spec->type == CLI_OPT_VALUE_OPTIONAL && spec->alias)
+		return git_str_printf(out, "-%c [<%s>]", spec->alias, spec->value_name);
+	else if (spec->type == CLI_OPT_VALUE_OPTIONAL)
+		return git_str_printf(out, "--%s[=<%s>]", spec->name, spec->value_name);
+	else if (spec->type == CLI_OPT_ARG)
+		return git_str_printf(out, "<%s>", spec->value_name);
+	else if (spec->type == CLI_OPT_ARGS)
+		return git_str_printf(out, "<%s...>", spec->value_name);
+	else if (spec->type == CLI_OPT_LITERAL)
+		return git_str_printf(out, "--");
+	else if (spec->alias && !(spec->usage & CLI_OPT_USAGE_SHOW_LONG))
+		return git_str_printf(out, "-%c", spec->alias);
+	else
+		return git_str_printf(out, "--%s", spec->name);
+}
+
 /*
  * This is similar to adopt's function, but modified to understand
  * that we have a command ("git") and a "subcommand" ("checkout").
@@ -56,26 +78,7 @@ int cli_opt_usage_fprint(
 		if (!optional && !choice && next_choice)
 			git_str_putc(&opt, '(');
 
-		if (spec->type == CLI_OPT_VALUE && spec->alias)
-			error = git_str_printf(&opt, "-%c <%s>", spec->alias, spec->value_name);
-		else if (spec->type == CLI_OPT_VALUE)
-			error = git_str_printf(&opt, "--%s=<%s>", spec->name, spec->value_name);
-		else if (spec->type == CLI_OPT_VALUE_OPTIONAL && spec->alias)
-			error = git_str_printf(&opt, "-%c [<%s>]", spec->alias, spec->value_name);
-		else if (spec->type == CLI_OPT_VALUE_OPTIONAL)
-			error = git_str_printf(&opt, "--%s[=<%s>]", spec->name, spec->value_name);
-		else if (spec->type == CLI_OPT_ARG)
-			error = git_str_printf(&opt, "<%s>", spec->value_name);
-		else if (spec->type == CLI_OPT_ARGS)
-			error = git_str_printf(&opt, "<%s...>", spec->value_name);
-		else if (spec->type == CLI_OPT_LITERAL)
-			error = git_str_printf(&opt, "--");
-		else if (spec->alias && !(spec->usage & CLI_OPT_USAGE_SHOW_LONG))
-			error = git_str_printf(&opt, "-%c", spec->alias);
-		else
-			error = git_str_printf(&opt, "--%s", spec->name);
-
-		if (error < 0)
+		if ((error = print_spec_name(&opt, spec)) < 0)
 			goto done;
 
 		if (!optional && choice && !next_choice)
@@ -120,6 +123,54 @@ done:
 
 	git_str_dispose(&usage);
 	git_str_dispose(&opt);
+	return error;
+}
+
+int cli_opt_help_fprint(
+	FILE *file,
+	const cli_opt_spec specs[])
+{
+	git_str help = GIT_BUF_INIT;
+	const cli_opt_spec *spec;
+	int error;
+
+	/* Display required arguments first */
+	for (spec = specs; spec->type; ++spec) {
+		if (! (spec->usage & CLI_OPT_USAGE_REQUIRED) ||
+		    (spec->usage & CLI_OPT_USAGE_HIDDEN))
+			continue;
+
+		git_str_printf(&help, "    ");
+
+		if ((error = print_spec_name(&help, spec)) < 0)
+			goto done;
+
+		git_str_printf(&help, ": %s\n", spec->help);
+	}
+
+	/* Display the remaining arguments */
+	for (spec = specs; spec->type; ++spec) {
+		if ((spec->usage & CLI_OPT_USAGE_REQUIRED) ||
+		    (spec->usage & CLI_OPT_USAGE_HIDDEN))
+			continue;
+
+		git_str_printf(&help, "    ");
+
+		if ((error = print_spec_name(&help, spec)) < 0)
+			goto done;
+
+		git_str_printf(&help, ": %s\n", spec->help);
+
+	}
+
+	if (git_str_oom(&help) ||
+	    p_write(fileno(file), help.ptr, help.size) < 0)
+		error = -1;
+
+done:
+	error = (error < 0) ? -1 : 0;
+
+	git_str_dispose(&help);
 	return error;
 }
 
