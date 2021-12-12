@@ -110,7 +110,11 @@ elseif(USE_SHA1 STREQUAL "Win32")
 	file(GLOB SRC_SHA1 hash/win32.*)
 endif()
 
-target_sources(git2internal PRIVATE ${SRC_SHA1} "hash/sha.h")
+if(USE_SHA256 STREQUAL "Builtin")
+	file(GLOB SRC_SHA256 hash/builtin.* hash/rfc6234/*)
+endif()
+
+target_sources(git2internal PRIVATE ${SRC_SHA1} ${SRC_SHA256} "hash/sha.h")
 
 # Optional external dependency: ntlmclient
 if(USE_NTLMCLIENT)
