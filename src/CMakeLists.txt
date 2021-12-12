@@ -112,6 +112,8 @@ endif()
 
 if(USE_SHA256 STREQUAL "Builtin")
 	file(GLOB SRC_SHA256 hash/builtin.* hash/rfc6234/*)
+elseif(USE_SHA256 STREQUAL "OpenSSL")
+	file(GLOB SRC_SHA256 hash/openssl.*)
 elseif(USE_SHA256 STREQUAL "CommonCrypto")
 	file(GLOB SRC_SHA256 hash/common_crypto.*)
 elseif(USE_SHA256 STREQUAL "mbedTLS")
