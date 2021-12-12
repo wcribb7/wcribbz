@@ -114,6 +114,8 @@ if(USE_SHA256 STREQUAL "Builtin")
 	file(GLOB SRC_SHA256 hash/builtin.* hash/rfc6234/*)
 elseif(USE_SHA256 STREQUAL "CommonCrypto")
 	file(GLOB SRC_SHA256 hash/common_crypto.*)
+elseif(USE_SHA256 STREQUAL "mbedTLS")
+	file(GLOB SRC_SHA256 hash/mbedtls.*)
 endif()
 
 target_sources(git2internal PRIVATE ${SRC_SHA1} ${SRC_SHA256} "hash/sha.h")
