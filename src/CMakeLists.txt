@@ -99,18 +99,18 @@ include(SelectZlib)
 
 
 if(USE_SHA1 STREQUAL "CollisionDetection")
-	file(GLOB SRC_SHA1 hash/sha1/collisiondetect.* hash/sha1/sha1dc/*)
+	file(GLOB SRC_SHA1 hash/collisiondetect.* hash/sha1dc/*)
 elseif(USE_SHA1 STREQUAL "OpenSSL")
-	file(GLOB SRC_SHA1 hash/sha1/openssl.*)
+	file(GLOB SRC_SHA1 hash/openssl.*)
 elseif(USE_SHA1 STREQUAL "CommonCrypto")
-	file(GLOB SRC_SHA1 hash/sha1/common_crypto.*)
+	file(GLOB SRC_SHA1 hash/common_crypto.*)
 elseif(USE_SHA1 STREQUAL "mbedTLS")
-	file(GLOB SRC_SHA1 hash/sha1/mbedtls.*)
+	file(GLOB SRC_SHA1 hash/mbedtls.*)
 elseif(USE_SHA1 STREQUAL "Win32")
-	file(GLOB SRC_SHA1 hash/sha1/win32.*)
+	file(GLOB SRC_SHA1 hash/win32.*)
 endif()
-list(APPEND SRC_SHA1 "hash/sha1.h")
-target_sources(git2internal PRIVATE ${SRC_SHA1})
+
+target_sources(git2internal PRIVATE ${SRC_SHA1} "hash/sha.h")
 
 # Optional external dependency: ntlmclient
 if(USE_NTLMCLIENT)
