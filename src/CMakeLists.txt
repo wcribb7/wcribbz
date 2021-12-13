@@ -118,6 +118,8 @@ elseif(USE_SHA256 STREQUAL "CommonCrypto")
 	file(GLOB SRC_SHA256 hash/common_crypto.*)
 elseif(USE_SHA256 STREQUAL "mbedTLS")
 	file(GLOB SRC_SHA256 hash/mbedtls.*)
+elseif(USE_SHA256 STREQUAL "Win32")
+	file(GLOB SRC_SHA256 hash/win32.*)
 endif()
 
 target_sources(git2internal PRIVATE ${SRC_SHA1} ${SRC_SHA256} "hash/sha.h")
