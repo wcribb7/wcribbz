@@ -522,9 +522,12 @@ static int http_stream_write(
 	git_net_url url = GIT_NET_URL_INIT;
 	git_http_request request = {0};
 	git_http_response response = {0};
+	bool complete;
 	int error;
 
-	while (stream->state == HTTP_STATE_NONE &&
+	stream->state = HTTP_STATE_SENDING_REQUEST;
+
+	while (stream->state == HTTP_STATE_SENDING_REQUEST &&
 	       stream->replay_count < GIT_HTTP_REPLAY_MAX) {
 
 		git_net_url_dispose(&url);
@@ -561,23 +564,25 @@ static int http_stream_write(
 			if ((error = git_http_client_read_response(&response, transport->http_client)) < 0 ||
 			    (error = handle_response(&complete, stream, &response, true)) < 0)
 			    goto done;
-		} else {
-			stream->state = HTTP_STATE_SENDING_REQUEST;
+
+			stream->replay_count++;
+			continue;
 		}
+
+		if ((error = git_http_client_send_body(transport->http_client, buffer, len)) < 0 ||
+		    (error = git_http_client_read_response(&response, transport->http_client)) < 0 ||
+		    (error = handle_response(&complete, stream, &response, false)) < 0)
+		    goto done;
 
 		stream->replay_count++;
 	}
 
-	if (stream->state == HTTP_STATE_NONE) {
+	if (stream->state == HTTP_STATE_SENDING_REQUEST) {
 		git_error_set(GIT_ERROR_HTTP,
 		              "too many redirects or authentication replays");
 		error = GIT_ERROR; /* not GIT_EAUTH because the exact cause is unclear */
 		goto done;
 	}
-
-	GIT_ASSERT(stream->state == HTTP_STATE_SENDING_REQUEST);
-
-	error = git_http_client_send_body(transport->http_client, buffer, len);
 
 done:
 	git_http_response_dispose(&response);
@@ -599,19 +604,11 @@ static int http_stream_read_response(
 	http_subtransport *transport = OWNING_SUBTRANSPORT(stream);
 	git_http_client *client = transport->http_client;
 	git_http_response response = {0};
-	bool complete;
 	int error;
 
 	*out_len = 0;
 
-	if (stream->state == HTTP_STATE_SENDING_REQUEST) {
-		if ((error = git_http_client_read_response(&response, client)) < 0 ||
-		    (error = handle_response(&complete, stream, &response, false)) < 0)
-		    goto done;
-
-		GIT_ASSERT(complete);
-		stream->state = HTTP_STATE_RECEIVING_RESPONSE;
-	}
+	GIT_ASSERT(stream->state == HTTP_STATE_RECEIVING_RESPONSE);
 
 	error = git_http_client_read_body(client, buffer, buffer_size);
 
@@ -620,7 +617,6 @@ static int http_stream_read_response(
 		error = 0;
 	}
 
-done:
 	git_http_response_dispose(&response);
 	return error;
 }
