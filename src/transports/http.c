@@ -237,15 +237,14 @@ static bool allow_redirect(http_stream *stream)
 static int handle_response(
 	bool *complete,
 	http_stream *stream,
-	git_http_response *response,
-	bool allow_replay)
+	git_http_response *response)
 {
 	http_subtransport *transport = OWNING_SUBTRANSPORT(stream);
 	int error;
 
 	*complete = false;
 
-	if (allow_replay && git_http_response_is_redirect(response)) {
+	if (git_http_response_is_redirect(response)) {
 		if (!response->location) {
 			git_error_set(GIT_ERROR_HTTP, "redirect without location");
 			return -1;
@@ -256,20 +255,17 @@ static int handle_response(
 		}
 
 		return 0;
-	} else if (git_http_response_is_redirect(response)) {
-		git_error_set(GIT_ERROR_HTTP, "unexpected redirect");
-		return -1;
 	}
 
 	/* If we're in the middle of challenge/response auth, continue. */
-	if (allow_replay && response->resend_credentials) {
+	if (response->resend_credentials) {
 		return 0;
-	} else if (allow_replay && response->status == GIT_HTTP_STATUS_UNAUTHORIZED) {
+	} else if (response->status == GIT_HTTP_STATUS_UNAUTHORIZED) {
 		if ((error = handle_remote_auth(stream, response)) < 0)
 			return error;
 
 		return git_http_client_skip_body(transport->http_client);
-	} else if (allow_replay && response->status == GIT_HTTP_STATUS_PROXY_AUTHENTICATION_REQUIRED) {
+	} else if (response->status == GIT_HTTP_STATUS_PROXY_AUTHENTICATION_REQUIRED) {
 		if ((error = handle_proxy_auth(stream, response)) < 0)
 			return error;
 
@@ -422,7 +418,7 @@ static int http_stream_read(
 			transport->http_client, &request)) < 0 ||
 		    (error = git_http_client_read_response(
 			    &response, transport->http_client)) < 0 ||
-		    (error = handle_response(&complete, stream, &response, true)) < 0)
+		    (error = handle_response(&complete, stream, &response)) < 0)
 			goto done;
 
 		if (complete)
@@ -494,7 +490,7 @@ static int send_probe(http_stream *stream)
 		    (error = git_http_client_send_body(client, probe, len)) < 0 ||
 		    (error = git_http_client_read_response(&response, client)) < 0 ||
 		    (error = git_http_client_skip_body(client)) < 0 ||
-		    (error = handle_response(&complete, stream, &response, true)) < 0)
+		    (error = handle_response(&complete, stream, &response)) < 0)
 			goto done;
 	}
 
@@ -562,7 +558,7 @@ static int http_stream_write(
 			 * deal with the response somehow.
 			 */
 			if ((error = git_http_client_read_response(&response, transport->http_client)) < 0 ||
-			    (error = handle_response(&complete, stream, &response, true)) < 0)
+			    (error = handle_response(&complete, stream, &response)) < 0)
 			    goto done;
 
 			stream->replay_count++;
@@ -571,7 +567,7 @@ static int http_stream_write(
 
 		if ((error = git_http_client_send_body(transport->http_client, buffer, len)) < 0 ||
 		    (error = git_http_client_read_response(&response, transport->http_client)) < 0 ||
-		    (error = handle_response(&complete, stream, &response, false)) < 0)
+		    (error = handle_response(&complete, stream, &response)) < 0)
 		    goto done;
 
 		stream->replay_count++;

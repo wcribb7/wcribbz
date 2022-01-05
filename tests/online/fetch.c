@@ -294,4 +294,8 @@ void test_online_fetch__redirect_config(void)
 	/* redirect=false */
 	cl_git_fail(do_redirected_fetch(_remote_redirect_initial, "initial", "false"));
 	cl_git_fail(do_redirected_fetch(_remote_redirect_subsequent, "subsequent", "false"));
+
+	/* redirect=true */
+	cl_git_pass(do_redirected_fetch(_remote_redirect_initial, "initial", "true"));
+	cl_git_pass(do_redirected_fetch(_remote_redirect_subsequent, "subsequent", "true"));
 }
