@@ -19,16 +19,11 @@
 #define REG_MSYSGIT_INSTALL L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Git_is1"
 #endif
 
-typedef struct {
-	git_win32_path path;
-	DWORD len;
-} _findfile_path;
-
-static int git_win32__expand_path(_findfile_path *dest, const wchar_t *src)
+static int git_win32__expand_path(git_win32_path dest, const wchar_t *src)
 {
-	dest->len = ExpandEnvironmentStringsW(src, dest->path, ARRAY_SIZE(dest->path));
+	DWORD len = ExpandEnvironmentStringsW(src, dest, GIT_WIN_PATH_UTF16);
 
-	if (!dest->len || dest->len > ARRAY_SIZE(dest->path))
+	if (!len || len > GIT_WIN_PATH_UTF16)
 		return -1;
 
 	return 0;
@@ -73,31 +68,32 @@ static wchar_t *win32_walkpath(wchar_t *path, wchar_t *buf, size_t buflen)
 static int win32_find_git_in_path(git_str *buf, const wchar_t *gitexe, const wchar_t *subdir)
 {
 	wchar_t *env = _wgetenv(L"PATH"), lastch;
-	_findfile_path root;
+	git_win32_path root;
 	size_t gitexe_len = wcslen(gitexe);
 
 	if (!env)
 		return -1;
 
-	while ((env = win32_walkpath(env, root.path, MAX_PATH-1)) && *root.path) {
-		root.len = (DWORD)wcslen(root.path);
-		lastch = root.path[root.len - 1];
+	while ((env = win32_walkpath(env, root, MAX_PATH-1)) && *root) {
+		size_t root_len = wcslen(root);
+		lastch = root[root_len - 1];
 
 		/* ensure trailing slash (MAX_PATH-1 to walkpath guarantees space) */
 		if (lastch != L'/' && lastch != L'\\') {
-			root.path[root.len++] = L'\\';
-			root.path[root.len]   = L'\0';
+			root[root_len++] = L'\\';
+			root[root_len]   = L'\0';
 		}
 
-		if (root.len + gitexe_len >= MAX_PATH)
+		if (root_len + gitexe_len >= MAX_PATH)
 			continue;
-		wcscpy(&root.path[root.len], gitexe);
 
-		if (_waccess(root.path, F_OK) == 0 && root.len > 5) {
+		wcscpy(&root[root_len], gitexe);
+
+		if (_waccess(root, F_OK) == 0 && root_len > 5) {
 			/* replace "bin\\" or "cmd\\" with subdir */
-			wcscpy(&root.path[root.len - 4], subdir);
+			wcscpy(&root[root_len - 4], subdir);
 
-			win32_path_to_8(buf, root.path);
+			win32_path_to_8(buf, root);
 			return 0;
 		}
 	}
@@ -143,17 +139,17 @@ static int win32_find_git_in_registry(
 static int win32_find_existing_dirs(
 	git_str *out, const wchar_t *tmpl[])
 {
-	_findfile_path path16;
+	git_win32_path path16;
 	git_str buf = GIT_STR_INIT;
 
 	git_str_clear(out);
 
 	for (; *tmpl != NULL; tmpl++) {
-		if (!git_win32__expand_path(&path16, *tmpl) &&
-			path16.path[0] != L'%' &&
-			!_waccess(path16.path, F_OK))
+		if (!git_win32__expand_path(path16, *tmpl) &&
+			path16[0] != L'%' &&
+			!_waccess(path16, F_OK))
 		{
-			win32_path_to_8(&buf, path16.path);
+			win32_path_to_8(&buf, path16);
 
 			if (buf.size)
 				git_str_join(out, GIT_PATH_LIST_SEPARATOR, out->ptr, buf.ptr);
