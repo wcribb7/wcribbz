@@ -383,7 +383,7 @@ static int check_object_connectivity(git_indexer *idx, const git_rawobj *obj)
 			size_t i;
 
 			git_array_foreach(tree->entries, i, entry)
-				if (add_expected_oid(idx, entry->oid) < 0)
+				if (add_expected_oid(idx, &entry->oid) < 0)
 					goto out;
 
 			break;
