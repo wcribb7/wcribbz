@@ -1797,7 +1797,7 @@ static int update_tips_for_spec(
 			continue;
 
 		if (error == GIT_ENOTFOUND) {
-			memset(&old, 0, GIT_OID_RAWSZ);
+			memset(&old, 0, sizeof(git_oid));
 
 			if (autotag && git_vector_insert(&update_heads, head) < 0)
 				goto on_error;
