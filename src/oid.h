@@ -22,6 +22,29 @@
  */
 char *git_oid_allocfmt(const git_oid *id);
 
+GIT_INLINE(int) git_oid_raw_ncmp(
+	const unsigned char *sha1,
+	const unsigned char *sha2,
+	size_t len)
+{
+	if (len > GIT_OID_HEXSZ)
+		len = GIT_OID_HEXSZ;
+
+	while (len > 1) {
+		if (*sha1 != *sha2)
+			return 1;
+		sha1++;
+		sha2++;
+		len -= 2;
+	};
+
+	if (len)
+		if ((*sha1 ^ *sha2) & 0xf0)
+			return 1;
+
+	return 0;
+}
+
 GIT_INLINE(int) git_oid_raw_cmp(
 	const unsigned char *sha1,
 	const unsigned char *sha2)
