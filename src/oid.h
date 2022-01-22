@@ -22,7 +22,9 @@
  */
 char *git_oid_allocfmt(const git_oid *id);
 
-GIT_INLINE(int) git_oid__hashcmp(const unsigned char *sha1, const unsigned char *sha2)
+GIT_INLINE(int) git_oid_raw_cmp(
+	const unsigned char *sha1,
+	const unsigned char *sha2)
 {
 	return memcmp(sha1, sha2, GIT_OID_RAWSZ);
 }
@@ -36,7 +38,7 @@ GIT_INLINE(int) git_oid__hashcmp(const unsigned char *sha1, const unsigned char 
  */
 GIT_INLINE(int) git_oid__cmp(const git_oid *a, const git_oid *b)
 {
-	return git_oid__hashcmp(a->id, b->id);
+	return git_oid_raw_cmp(a->id, b->id);
 }
 
 GIT_INLINE(void) git_oid__cpy_prefix(
