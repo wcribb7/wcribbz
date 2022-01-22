@@ -12,6 +12,16 @@
 #include "git2/oid.h"
 
 /**
+ * A "raw" object ID without any additional metadata like the type.
+ *
+ * This is useful for internal-facing data structures like commit
+ * graphs and indexes.
+ */
+typedef struct git_oid_raw {
+	unsigned char id[GIT_OID_RAWSZ];
+} git_oid_raw;
+
+/**
  * Format a git_oid into a newly allocated c-string.
  *
  * The c-string is owned by the caller and needs to be manually freed.
