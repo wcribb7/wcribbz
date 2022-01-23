@@ -174,7 +174,7 @@ static int packed_reload(refdb_fs_backend *backend)
 
 		if (git_oid_fromstr(&oid, scan) < 0)
 			goto parse_failed;
-		scan += GIT_OID_HEXSZ;
+		scan += GIT_OID_SHA1_HEXSIZE;
 
 		if (*scan++ != ' ')
 			goto parse_failed;
@@ -195,7 +195,7 @@ static int packed_reload(refdb_fs_backend *backend)
 		if (*scan == '^') {
 			if (git_oid_fromstr(&oid, scan + 1) < 0)
 				goto parse_failed;
-			scan += GIT_OID_HEXSZ + 1;
+			scan += GIT_OID_SHA1_HEXSIZE + 1;
 
 			if (scan < eof) {
 				if (!(eol = strchr(scan, '\n')))
@@ -232,7 +232,7 @@ static int loose_parse_oid(
 {
 	const char *str = git_str_cstr(file_content);
 
-	if (git_str_len(file_content) < GIT_OID_HEXSZ)
+	if (git_str_len(file_content) < GIT_OID_SHA1_HEXSIZE)
 		goto corrupted;
 
 	/* we need to get 40 OID characters from the file */
@@ -240,7 +240,7 @@ static int loose_parse_oid(
 		goto corrupted;
 
 	/* If the file is longer than 40 chars, the 41st must be a space */
-	str += GIT_OID_HEXSZ;
+	str += GIT_OID_SHA1_HEXSIZE;
 	if (*str == '\0' || git__isspace(*str))
 		return 0;
 
@@ -856,7 +856,7 @@ static int loose_commit(git_filebuf *file, const git_reference *ref)
 	GIT_ASSERT_ARG(ref);
 
 	if (ref->type == GIT_REFERENCE_DIRECT) {
-		char oid[GIT_OID_HEXSZ + 1];
+		char oid[GIT_OID_SHA1_HEXSIZE + 1];
 		git_oid_nfmt(oid, sizeof(oid), &ref->target.oid);
 
 		git_filebuf_printf(file, "%s\n", oid);
@@ -972,7 +972,7 @@ static int packed_find_peel(refdb_fs_backend *backend, struct packref *ref)
  */
 static int packed_write_ref(struct packref *ref, git_filebuf *file)
 {
-	char oid[GIT_OID_HEXSZ + 1];
+	char oid[GIT_OID_SHA1_HEXSIZE + 1];
 	git_oid_nfmt(oid, sizeof(oid), &ref->oid);
 
 	/*
@@ -986,7 +986,7 @@ static int packed_write_ref(struct packref *ref, git_filebuf *file)
 	 * The required peels have already been loaded into `ref->peel_target`.
 	 */
 	if (ref->flags & PACKREF_HAS_PEEL) {
-		char peel[GIT_OID_HEXSZ + 1];
+		char peel[GIT_OID_SHA1_HEXSIZE + 1];
 		git_oid_nfmt(peel, sizeof(peel), &ref->peel);
 
 		if (git_filebuf_printf(file, "%s %s\n^%s\n", oid, ref->name, peel) < 0)
@@ -1815,11 +1815,11 @@ static int serialize_reflog_entry(
 	const git_signature *committer,
 	const char *msg)
 {
-	char raw_old[GIT_OID_HEXSZ+1];
-	char raw_new[GIT_OID_HEXSZ+1];
+	char raw_old[GIT_OID_SHA1_HEXSIZE+1];
+	char raw_new[GIT_OID_SHA1_HEXSIZE+1];
 
-	git_oid_tostr(raw_old, GIT_OID_HEXSZ+1, oid_old);
-	git_oid_tostr(raw_new, GIT_OID_HEXSZ+1, oid_new);
+	git_oid_tostr(raw_old, GIT_OID_SHA1_HEXSIZE+1, oid_old);
+	git_oid_tostr(raw_new, GIT_OID_SHA1_HEXSIZE+1, oid_new);
 
 	git_str_clear(buf);
 
