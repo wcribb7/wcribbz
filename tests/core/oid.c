@@ -9,9 +9,9 @@ const char *str_oid_m = "ae90f12eea699729ed24555e40b9fd669da12a12THIS IS EXTRA T
 
 void test_core_oid__initialize(void)
 {
-	cl_git_pass(git_oid_fromstr(&id, str_oid));
-	cl_git_pass(git_oid_fromstrp(&idp, str_oid_p));
-	cl_git_fail(git_oid_fromstrp(&idm, str_oid_m));
+	cl_git_pass(git_oid_fromstr(&id, str_oid, GIT_OID_SHA1));
+	cl_git_pass(git_oid_fromstrp(&idp, str_oid_p, GIT_OID_SHA1));
+	cl_git_fail(git_oid_fromstrp(&idm, str_oid_m, GIT_OID_SHA1));
 }
 
 void test_core_oid__streq(void)

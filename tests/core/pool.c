@@ -70,7 +70,7 @@ void test_core_pool__2(void)
 
 		for (j = 0; j < 8; j++)
 			oid_hex[j] = to_hex[(i >> (4 * j)) & 0x0f];
-		cl_git_pass(git_oid_fromstr(oid, oid_hex));
+		cl_git_pass(git_oid_fromstr(oid, oid_hex, GIT_OID_SHA1));
 	}
 
 #ifndef GIT_DEBUG_POOL
