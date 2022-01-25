@@ -1,4 +1,5 @@
 #include "clar_libgit2.h"
+#include "oid.h"
 
 static git_oid id_sha1;
 static git_oid idp_sha1;
@@ -141,4 +142,29 @@ void test_core_oid__ncmp_sha256(void)
 	cl_assert(!git_oid_ncmp(&id_sha256, &id_sha256, 63));
 	cl_assert(!git_oid_ncmp(&id_sha256, &id_sha256, 64));
 	cl_assert(!git_oid_ncmp(&id_sha256, &id_sha256, 65));
+}
+
+void test_core_oid__fmt_substr_sha1(void)
+{
+	char buf[GIT_OID_MAX_HEXSIZE];
+
+	memset(buf, 0, GIT_OID_MAX_HEXSIZE);
+	git_oid_fmt_substr(buf, &id_sha1, 0, 40);
+	cl_assert_equal_s(buf, str_oid_sha1);
+
+	memset(buf, 0, GIT_OID_MAX_HEXSIZE);
+	git_oid_fmt_substr(buf, &id_sha1, 0, 18);
+	cl_assert_equal_s(buf, str_oid_sha1_p);
+
+	memset(buf, 0, GIT_OID_MAX_HEXSIZE);
+	git_oid_fmt_substr(buf, &id_sha1, 0, 5);
+	cl_assert_equal_s(buf, "ae90f");
+
+	memset(buf, 0, GIT_OID_MAX_HEXSIZE);
+	git_oid_fmt_substr(buf, &id_sha1, 5, 5);
+	cl_assert_equal_s(buf, "12eea");
+
+	memset(buf, 0, GIT_OID_MAX_HEXSIZE);
+	git_oid_fmt_substr(buf, &id_sha1, 5, 6);
+	cl_assert_equal_s(buf, "12eea6");
 }
