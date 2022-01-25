@@ -75,7 +75,7 @@ void test_core_pool__2(void)
 
 #ifndef GIT_DEBUG_POOL
 	/* with fixed page size, allocation must end up with these values */
-	cl_assert_equal_i(sizeof(void *) == 8 ? 55 : 45, git_pool__open_pages(&p));
+	cl_assert_equal_i(sizeof(void *) == 8 ? 90 : 82, git_pool__open_pages(&p));
 #endif
 	git_pool_clear(&p);
 }
