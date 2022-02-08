@@ -55,6 +55,11 @@ check_prototype_definition(qsort_r
 
 check_function_exists(qsort_s GIT_QSORT_S)
 
+check_function_exists(getrandom GIT_RAND_GETRANDOM)
+if(NOT GIT_RAND_GETENTROPY)
+	check_function_exists(getentropy GIT_RAND_GETENTROPY)
+endif()
+
 # Find required dependencies
 
 if(WIN32)
