@@ -167,10 +167,10 @@ static void *run_index_diffs_with_modifier(void *arg)
 
 		for (i = 0; i < 300; ++i) {
 			switch (i & 0x03) {
-			case 0: (void)git_index_add_bypath(idx, "new_file"); break;
-			case 1: (void)git_index_remove_bypath(idx, "modified_file"); break;
-			case 2: (void)git_index_remove_bypath(idx, "new_file"); break;
-			case 3: (void)git_index_add_bypath(idx, "modified_file"); break;
+			case 0: cl_git_pass(git_index_add_bypath(idx, "new_file")); break;
+			case 1: cl_git_pass(git_index_remove_bypath(idx, "modified_file")); break;
+			case 2: cl_git_pass(git_index_remove_bypath(idx, "new_file")); break;
+			case 3: cl_git_pass(git_index_add_bypath(idx, "modified_file")); break;
 			}
 			git_thread_yield();
 		}
