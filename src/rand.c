@@ -27,6 +27,11 @@ static git_mutex state_lock;
 # define SEED_SHIFT 0
 #endif
 
+typedef union {
+	double f;
+	uint64_t d;
+} bits;
+
 #if defined(GIT_WIN32)
 GIT_INLINE(int) getseed(uint64_t *seed)
 {
@@ -66,12 +71,10 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 	*seed ^= ((uint64_t)usertime.dwHighDateTime << 32);
 
 	/* Mix in the addresses of some functions and variables */
-	*seed ^= ((uint64_t)((void *)getseed) << SEED_SHIFT);
-	*seed ^= ((uint64_t)((void *)seed));
-	*seed ^= ((uint64_t)((void *)printf) << SEED_SHIFT);
-	*seed ^= ((uint64_t)((void *)&errno));
+	*seed ^= ((uint64_t)((size_t)((void *)seed)) << SEED_SHIFT);
+	*seed ^= ((uint64_t)((size_t)((void *)&errno)));
 
-	*seed ^= ((uint64_t)git__timer());
+	*seed ^= ((bits)git__timer()).d;
 
 	return 0;
 }
@@ -84,7 +87,7 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 	double loadavg[3];
 	int fd;
 
-# if defined(GIT_RAND_GETENTROPYZ)
+# if defined(GIT_RAND_GETENTROPY)
 	if (getentropy(seed, sizeof(uint64_t)) == 0)
 		return 0;
 # endif
@@ -109,27 +112,27 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 		return -1;
 	}
 
+	getloadavg(loadavg, 3);
+
 	*seed |= ((uint64_t)tv.tv_usec << 40);
 	*seed |= ((uint64_t)tv.tv_sec);
 
-	*seed ^= ((uint64_t)getpid() << 32);
-	*seed ^= ((uint64_t)getpgid(0));
+	*seed ^= ((uint64_t)getpid() << 48);
 	*seed ^= ((uint64_t)getppid() << 32);
-	*seed ^= ((uint64_t)getsid(0));
-	*seed ^= ((uint64_t)getuid() << 32);
+	*seed ^= ((uint64_t)getpgid(0) << 28);
+	*seed ^= ((uint64_t)getsid(0) << 16);
+	*seed ^= ((uint64_t)getuid() << 8);
 	*seed ^= ((uint64_t)getgid());
 
-	*seed ^= ((uint64_t)loadavg[0]);
-	*seed ^= ((uint64_t)loadavg[1]);
-	*seed ^= ((uint64_t)loadavg[2]);
+	*seed ^= (((bits)loadavg[0]).d >> 36);
+	*seed ^= (((bits)loadavg[1]).d);
+	*seed ^= (((bits)loadavg[2]).d >> 16);
 
-	/* Mix in the addresses of some functions and variables */
-	*seed ^= ((uint64_t)((size_t)((void *)getseed)) << SEED_SHIFT);
-	*seed ^= ((uint64_t)((size_t)((void *)seed)));
-	*seed ^= ((uint64_t)((size_t)((void *)printf)) << SEED_SHIFT);
+	*seed ^= ((bits)git__timer()).d;
+
+	/* Mix in the addresses of some variables */
+	*seed ^= ((uint64_t)((size_t)((void *)seed)) << 32);
 	*seed ^= ((uint64_t)((size_t)((void *)&errno)));
-
-	*seed ^= ((uint64_t)git__timer());
 
 	return 0;
 }
