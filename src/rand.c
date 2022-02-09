@@ -58,12 +58,12 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 	*seed ^= ((uint64_t)GetCurrentThreadId());
 
 	GetSystemTimes(&idletime, &kerneltime, &usertime);
-	*seed |= ((uint64_t)idletime.dwLowDateTime);
-	*seed |= ((uint64_t)idletime.dwHighDateTime << 32);
-	*seed |= ((uint64_t)kerneltime.dwLowDateTime << 32);
-	*seed |= ((uint64_t)kerneltime.dwHighDateTime);
-	*seed |= ((uint64_t)usertime.dwLowDateTime);
-	*seed |= ((uint64_t)usertime.dwHighDateTime << 32);
+	*seed ^= ((uint64_t)idletime.dwLowDateTime);
+	*seed ^= ((uint64_t)idletime.dwHighDateTime << 32);
+	*seed ^= ((uint64_t)kerneltime.dwLowDateTime << 32);
+	*seed ^= ((uint64_t)kerneltime.dwHighDateTime);
+	*seed ^= ((uint64_t)usertime.dwLowDateTime);
+	*seed ^= ((uint64_t)usertime.dwHighDateTime << 32);
 
 	/* Mix in the addresses of some functions and variables */
 	*seed ^= ((uint64_t)((void *)getseed) << SEED_SHIFT);
