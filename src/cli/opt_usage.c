@@ -155,7 +155,8 @@ int cli_opt_help_fprint(
 	/* Display required arguments first */
 	for (spec = specs; spec->type; ++spec) {
 		if (! (spec->usage & CLI_OPT_USAGE_REQUIRED) ||
-		    (spec->usage & CLI_OPT_USAGE_HIDDEN))
+		    (spec->usage & CLI_OPT_USAGE_HIDDEN) ||
+		    (spec->type == CLI_OPT_TYPE_LITERAL))
 			continue;
 
 		git_str_printf(&help, "    ");
@@ -169,7 +170,8 @@ int cli_opt_help_fprint(
 	/* Display the remaining arguments */
 	for (spec = specs; spec->type; ++spec) {
 		if ((spec->usage & CLI_OPT_USAGE_REQUIRED) ||
-		    (spec->usage & CLI_OPT_USAGE_HIDDEN))
+		    (spec->usage & CLI_OPT_USAGE_HIDDEN) ||
+		    (spec->type == CLI_OPT_TYPE_LITERAL))
 			continue;
 
 		git_str_printf(&help, "    ");
