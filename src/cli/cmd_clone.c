@@ -8,6 +8,8 @@
 #include <git2.h>
 #include "cli.h"
 #include "cmd.h"
+#include "progress.h"
+
 #include "fs_path.h"
 #include "futils.h"
 
@@ -15,9 +17,10 @@
 
 static int show_help;
 static int quiet;
-static bool local_path_exists;
 
 static char *remote_path, *local_path;
+static bool local_path_exists;
+static cli_progress progress = CLI_PROGRESS_INIT;
 
 static const cli_opt_spec opts[] = {
 	{ CLI_OPT_TYPE_SWITCH,   "help",          0, &show_help,  1,
@@ -77,6 +80,8 @@ static void cleanup(void)
 {
 	int rmdir_flags = GIT_RMDIR_REMOVE_FILES;
 
+	cli_progress_abort(&progress);
+
 	if (local_path_exists)
 		rmdir_flags |= GIT_RMDIR_SKIP_ROOT;
 
@@ -107,14 +112,25 @@ int cmd_clone(int argc, char **argv)
 
 	local_path_exists = validate_local_path(local_path);
 
-	if (!quiet)
+	if (!quiet) {
+		clone_opts.fetch_opts.callbacks.sideband_progress = cli_progress_fetch_sideband;
+		clone_opts.fetch_opts.callbacks.transfer_progress = cli_progress_fetch_transfer;
+		clone_opts.fetch_opts.callbacks.payload = &progress;
+
+		clone_opts.checkout_opts.progress_cb = cli_progress_checkout;
+		clone_opts.checkout_opts.progress_payload = &progress;
+
 		printf("Cloning into '%s'...\n", local_path);
+	}
 
 	if (git_clone(&repo, remote_path, local_path, &clone_opts) < 0) {
 		cleanup();
 		cli_die_git();
 	}
 
+	cli_progress_finish(&progress);
+
+	cli_progress_dispose(&progress);
 	git__free(computed_path);
 	git_repository_free(repo);
 
