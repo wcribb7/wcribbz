@@ -48,4 +48,11 @@ GIT_INLINE(int) cli_error_git(void)
 
 #define cli_error_os() (perror(PROGRAM_NAME), CLI_EXIT_OS)
 
+#define cli_die(...) \
+	do { exit(cli_error(__VA_ARGS__)); } while(0)
+#define cli_die_git(...) \
+	do { exit(cli_error_git(__VA_ARGS__)); } while(0)
+#define cli_die_os(...) \
+	do { exit(cli_error_os(__VA_ARGS__)); } while(0)
+
 #endif /* CLI_error_h__ */
