@@ -34,6 +34,8 @@ static const cli_opt_spec opts[] = {
 	  CLI_OPT_USAGE_DEFAULT,  NULL,         "do not display progress output" },
 	{ CLI_OPT_TYPE_BOOL,      "bare",        0,  &clone_opts.bare, 1,
 	  CLI_OPT_USAGE_DEFAULT,  NULL,         "don't create a working directory" },
+	{ CLI_OPT_TYPE_VALUE,     "branch",     'b', &clone_opts.checkout_branch, 0,
+	  CLI_OPT_USAGE_DEFAULT,  "branch",     "branch to checkout" },
 
 	{ CLI_OPT_TYPE_LITERAL },
 	{ CLI_OPT_TYPE_ARG,       "repository",  0, &remote_path, 0,
