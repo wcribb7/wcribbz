@@ -619,6 +619,17 @@ void git_str_rtruncate_at_char(git_str *buf, char separator)
 	git_str_truncate(buf, idx < 0 ? 0 : (size_t)idx);
 }
 
+bool git_str_endswith(git_str *str, const char *end)
+{
+	size_t end_len = strlen(end);
+
+	if (end_len > str->size)
+		return false;
+
+	return (end_len <= str->size &&
+	        strcmp(str->ptr + (str->size - end_len), end) == 0);
+}
+
 void git_str_swap(git_str *str_a, git_str *str_b)
 {
 	git_str t = *str_a;

@@ -154,6 +154,7 @@ void git_str_truncate(git_str *str, size_t len);
 void git_str_shorten(git_str *str, size_t amount);
 void git_str_truncate_at_char(git_str *path, char separator);
 void git_str_rtruncate_at_char(git_str *path, char separator);
+bool git_str_endswith(git_str *path, const char *end);
 
 /** General join with separator */
 int git_str_join_n(git_str *str, char separator, int len, ...);

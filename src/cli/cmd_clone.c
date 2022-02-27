@@ -19,6 +19,8 @@
 static int show_help;
 static int quiet;
 
+static git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
+
 static char *remote_path, *local_path;
 static bool local_path_exists;
 static cli_progress progress = CLI_PROGRESS_INIT;
@@ -30,6 +32,8 @@ static const cli_opt_spec opts[] = {
 
 	{ CLI_OPT_TYPE_BOOL,      "quiet",      'q', &quiet,      0,
 	  CLI_OPT_USAGE_DEFAULT,  NULL,         "do not display progress output" },
+	{ CLI_OPT_TYPE_BOOL,      "bare",        0,  &clone_opts.bare, 1,
+	  CLI_OPT_USAGE_DEFAULT,  NULL,         "don't create a working directory" },
 
 	{ CLI_OPT_TYPE_LITERAL },
 	{ CLI_OPT_TYPE_ARG,       "repository",  0, &remote_path, 0,
@@ -54,16 +58,24 @@ static void print_help(void)
 
 static char *compute_local_path(const char *orig_path)
 {
+	git_str local_path = GIT_STR_INIT;
 	const char *slash;
-	char *local_path;
 
 	if ((slash = strrchr(orig_path, '/')) == NULL &&
 	    (slash = strrchr(orig_path, '\\')) == NULL)
-		local_path = git__strdup(orig_path);
+		git_str_puts(&local_path, orig_path);
 	else
-		local_path = git__strdup(slash + 1);
+		git_str_puts(&local_path, slash + 1);
 
-	return local_path;
+	if (clone_opts.bare) {
+		if (!git_str_endswith(&local_path, ".git"))
+			git_str_puts(&local_path, ".git");
+	} else {
+		if (git_str_endswith(&local_path, ".git"))
+			git_str_shorten(&local_path, 4);
+	}
+
+	return git_str_detach(&local_path);
 }
 
 static bool validate_local_path(const char *path)
@@ -101,7 +113,6 @@ static void interrupt_cleanup(void)
 
 int cmd_clone(int argc, char **argv)
 {
-	git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 	git_repository *repo = NULL;
 	cli_opt invalid_opt;
 	char *computed_path = NULL;
