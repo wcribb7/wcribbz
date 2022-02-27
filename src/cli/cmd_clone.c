@@ -12,6 +12,7 @@
 
 #include "fs_path.h"
 #include "futils.h"
+#include "sighandler.h"
 
 #define COMMAND_NAME "clone"
 
@@ -92,6 +93,12 @@ static void cleanup(void)
 		cli_die_git();
 }
 
+static void interrupt_cleanup(void)
+{
+	cleanup();
+	exit(130);
+}
+
 int cmd_clone(int argc, char **argv)
 {
 	git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
@@ -111,6 +118,8 @@ int cmd_clone(int argc, char **argv)
 		local_path = computed_path = compute_local_path(remote_path);
 
 	local_path_exists = validate_local_path(local_path);
+
+	git_sighandler_set_interrupt(interrupt_cleanup);
 
 	if (!quiet) {
 		clone_opts.fetch_opts.callbacks.sideband_progress = cli_progress_fetch_sideband;
