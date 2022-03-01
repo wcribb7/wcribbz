@@ -363,7 +363,7 @@ static bool should_checkout(
 	if (is_bare)
 		return false;
 
-	if (opts->checkout_opts.checkout_strategy == GIT_CHECKOUT_NONE)
+	if (opts->no_checkout)
 		return false;
 
 	return !git_repository_head_unborn(repo);
@@ -581,6 +581,10 @@ static int clone_repo(
 	/* enforce some behavior on fetch */
 	options.fetch_opts.update_fetchhead = 0;
 	options.fetch_opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_ALL;
+
+	/* Backward compatibility: support the deprecated GIT_CHECKOUT_NONE */
+	if (options.checkout_opts.checkout_strategy == GIT_CHECKOUT_NONE)
+		options.no_checkout = 1;
 
 	/* Only clone to a new directory or an empty directory */
 	if (git_fs_path_exists(local_path) && !use_existing && !git_fs_path_is_empty_dir(local_path)) {

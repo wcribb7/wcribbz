@@ -105,8 +105,7 @@ typedef struct git_clone_options {
 
 	/**
 	 * These options are passed to the checkout step. To disable
-	 * checkout, set the `checkout_strategy` to
-	 * `GIT_CHECKOUT_DRY_RUN`.
+	 * checkout, set the `no_checkout` option to `1`.
 	 */
 	git_checkout_options checkout_opts;
 
@@ -117,6 +116,9 @@ typedef struct git_clone_options {
 	 * credentials in the event they are needed.
 	 */
 	git_fetch_options fetch_opts;
+
+	/** Set to non-zero to not check out the working directory. */
+	int no_checkout;
 
 	/**
 	 * Set to zero (false) to create a standard repo, or non-zero

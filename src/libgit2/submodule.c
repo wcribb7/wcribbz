@@ -1387,7 +1387,7 @@ int git_submodule_update(git_submodule *sm, int init, git_submodule_update_optio
 		 * Do not perform checkout as part of clone, instead we
 		 * will checkout the specific commit manually.
 		 */
-		clone_options.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
+		clone_options.no_checkout = 1;
 
 		if ((error = git_clone(&sub_repo, submodule_url, sm->path, &clone_options)) < 0 ||
 			(error = git_repository_set_head_detached(sub_repo, git_submodule_index_id(sm))) < 0 ||
