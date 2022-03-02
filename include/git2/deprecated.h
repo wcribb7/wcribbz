@@ -260,6 +260,21 @@ GIT_EXTERN(void) git_buf_free(git_buf *buffer);
 
 /**@}*/
 
+/** @name Deprecated Checkout Definitions */
+/**@{*/
+
+/**
+ * Do not do a checkout and do not fire callbacks; this is useful
+ * for internal functions that will perform the checkout themselves
+ * but need to pass checkout options into another function, for
+ * example, `git_clone`.
+ *
+ * @deprecated Users should use `GIT_CHECKOUT_DRY_RUN`
+ */
+#define GIT_CHECKOUT_NONE (1u << 30)
+
+/**@}*/
+
 /** @name Deprecated Commit Definitions
  */
 /**@{*/

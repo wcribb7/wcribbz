@@ -190,13 +190,8 @@ typedef enum {
 	/** Recursively checkout submodules if HEAD moved in super repo (NOT IMPLEMENTED) */
 	GIT_CHECKOUT_UPDATE_SUBMODULES_IF_CHANGED = (1u << 17),
 
-	/**
-	 * Do not do a checkout and do not fire callbacks; this is useful
-	 * for internal functions that will perform the checkout themselves
-	 * but need to pass checkout options into another function, for
-	 * example, `git_clone`.
-	*/
-	GIT_CHECKOUT_NONE = (1u << 30)
+	/** Reserved for backward compatibility */
+	GIT_CHECKOUT_RESERVED = (1u << 30)
 } git_checkout_strategy_t;
 
 /**

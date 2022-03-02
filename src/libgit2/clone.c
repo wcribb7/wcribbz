@@ -583,8 +583,10 @@ static int clone_repo(
 	options.fetch_opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_ALL;
 
 	/* Backward compatibility: support the deprecated GIT_CHECKOUT_NONE */
+#ifndef GIT_DEPRECATE_HARD
 	if (options.checkout_opts.checkout_strategy == GIT_CHECKOUT_NONE)
 		options.no_checkout = 1;
+#endif
 
 	/* Only clone to a new directory or an empty directory */
 	if (git_fs_path_exists(local_path) && !use_existing && !git_fs_path_is_empty_dir(local_path)) {
