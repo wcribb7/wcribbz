@@ -262,6 +262,11 @@ jobs:
           ../source/ci/test.sh
         fi
       shell: bash
+    - name: Report test results
+      uses: test-summary/action@v1
+      with:
+        paths: build/**/*.xml
+      if: always()
 
   # Generate documentation using docurium.  We'll upload the documentation
   # as a build artifact so that it can be reviewed as part of a pull
