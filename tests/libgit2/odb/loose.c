@@ -188,18 +188,6 @@ void test_odb_loose__exists_sha256(void)
 #endif
 }
 
-void test_odb_loose__zzz(void)
-{
-	write_object_files(&one_sha256);
-	write_object_files(&commit_sha256);
-	write_object_files(&tree_sha256);
-	write_object_files(&tag_sha256);
-	write_object_files(&zero_sha256);
-	write_object_files(&two_sha256);
-	write_object_files(&some_sha256);
-	abort();
-}
-
 void test_odb_loose__simple_reads_sha1(void)
 {
 	test_read_object(&commit);
