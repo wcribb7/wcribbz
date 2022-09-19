@@ -34,8 +34,14 @@ void test_core_opts__extensions_query(void)
 
 	cl_git_pass(git_libgit2_opts(GIT_OPT_GET_EXTENSIONS, &out));
 
+#ifdef GIT_EXPERIMENTAL_SHA256
+	cl_assert_equal_sz(out.count, 2);
+	cl_assert_equal_s("noop", out.strings[0]);
+	cl_assert_equal_s("objectformat", out.strings[1]);
+#else
 	cl_assert_equal_sz(out.count, 1);
 	cl_assert_equal_s("noop", out.strings[0]);
+#endif
 
 	git_strarray_dispose(&out);
 }
@@ -48,9 +54,16 @@ void test_core_opts__extensions_add(void)
 	cl_git_pass(git_libgit2_opts(GIT_OPT_SET_EXTENSIONS, in, ARRAY_SIZE(in)));
 	cl_git_pass(git_libgit2_opts(GIT_OPT_GET_EXTENSIONS, &out));
 
+#ifdef GIT_EXPERIMENTAL_SHA256
+	cl_assert_equal_sz(out.count, 3);
+	cl_assert_equal_s("noop", out.strings[0]);
+	cl_assert_equal_s("objectformat", out.strings[1]);
+	cl_assert_equal_s("foo", out.strings[2]);
+#else
 	cl_assert_equal_sz(out.count, 2);
 	cl_assert_equal_s("noop", out.strings[0]);
 	cl_assert_equal_s("foo", out.strings[1]);
+#endif
 
 	git_strarray_dispose(&out);
 }
@@ -63,9 +76,16 @@ void test_core_opts__extensions_remove(void)
 	cl_git_pass(git_libgit2_opts(GIT_OPT_SET_EXTENSIONS, in, ARRAY_SIZE(in)));
 	cl_git_pass(git_libgit2_opts(GIT_OPT_GET_EXTENSIONS, &out));
 
+#ifdef GIT_EXPERIMENTAL_SHA256
+	cl_assert_equal_sz(out.count, 3);
+	cl_assert_equal_s("objectformat", out.strings[0]);
+	cl_assert_equal_s("bar", out.strings[1]);
+	cl_assert_equal_s("baz", out.strings[2]);
+#else
 	cl_assert_equal_sz(out.count, 2);
 	cl_assert_equal_s("bar", out.strings[0]);
 	cl_assert_equal_s("baz", out.strings[1]);
+#endif
 
 	git_strarray_dispose(&out);
 }
