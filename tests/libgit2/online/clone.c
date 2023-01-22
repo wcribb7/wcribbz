@@ -14,6 +14,7 @@
 #define GOOGLESOURCE_REPO_URL "https://chromium.googlesource.com/external/github.com/sergi/go-diff"
 
 #define SSH_REPO_URL "ssh://github.com/libgit2/TestGitRepository"
+#define SSH_REPO_URL_WITH_USERNAME "ssh://git@github.com/libgit2/TestGitRepository"
 
 static git_repository *g_repo;
 static git_clone_options g_options;
@@ -131,6 +132,28 @@ void test_online_clone__cleanup(void)
 
 	git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, NULL, NULL);
 }
+
+static int succeed_certificate_check(git_cert *cert, int valid, const char *host, void *payload)
+{
+	GIT_UNUSED(cert);
+	GIT_UNUSED(valid);
+	GIT_UNUSED(payload);
+
+	cl_assert_equal_s("github.com", host);
+
+	return 0;
+}
+
+static int fail_certificate_check(git_cert *cert, int valid, const char *host, void *payload)
+{
+	GIT_UNUSED(cert);
+	GIT_UNUSED(valid);
+	GIT_UNUSED(host);
+	GIT_UNUSED(payload);
+
+	return GIT_ECERTIFICATE;
+}
+
 
 void test_online_clone__network_full(void)
 {
@@ -563,7 +586,7 @@ void test_online_clone__ssh_auth_methods(void)
 #endif
 	g_options.fetch_opts.callbacks.credentials = check_ssh_auth_methods;
 	g_options.fetch_opts.callbacks.payload = &with_user;
-	g_options.fetch_opts.callbacks.certificate_check = NULL;
+	g_options.fetch_opts.callbacks.certificate_check = succeed_certificate_check;
 
 	with_user = 0;
 	cl_git_fail_with(GIT_EUSER,
@@ -571,7 +594,7 @@ void test_online_clone__ssh_auth_methods(void)
 
 	with_user = 1;
 	cl_git_fail_with(GIT_EUSER,
-		git_clone(&g_repo, "ssh://git@github.com/libgit2/TestGitRepository", "./foo", &g_options));
+		git_clone(&g_repo, SSH_REPO_URL_WITH_USERNAME, "./foo", &g_options));
 }
 
 static int custom_remote_ssh_with_paths(
@@ -639,8 +662,9 @@ void test_online_clone__ssh_cannot_change_username(void)
 	clar__skip();
 #endif
 	g_options.fetch_opts.callbacks.credentials = cred_foo_bar;
+	g_options.fetch_opts.callbacks.certificate_check = succeed_certificate_check;
 
-	cl_git_fail(git_clone(&g_repo, "ssh://git@github.com/libgit2/TestGitRepository", "./foo", &g_options));
+	cl_git_fail(git_clone(&g_repo, SSH_REPO_URL_WITH_USERNAME, "./foo", &g_options));
 }
 
 static int ssh_certificate_check(git_cert *cert, int valid, const char *host, void *payload)
@@ -677,7 +701,7 @@ static int ssh_certificate_check(git_cert *cert, int valid, const char *host, vo
 	return GIT_EUSER;
 }
 
-void test_online_clone__ssh_cert(void)
+void test_online_clone__ssh_cert_check_cb(void)
 {
 	g_options.fetch_opts.callbacks.certificate_check = ssh_certificate_check;
 
@@ -746,38 +770,17 @@ void test_online_clone__ssh_memory_auth(void)
 	cl_git_pass(git_clone(&g_repo, _remote_url, "./foo", &g_options));
 }
 
-static int fail_certificate_check(git_cert *cert, int valid, const char *host, void *payload)
-{
-	GIT_UNUSED(cert);
-	GIT_UNUSED(valid);
-	GIT_UNUSED(host);
-	GIT_UNUSED(payload);
-
-	return GIT_ECERTIFICATE;
-}
-
 void test_online_clone__certificate_invalid(void)
 {
 	g_options.fetch_opts.callbacks.certificate_check = fail_certificate_check;
 
-	cl_git_fail_with(git_clone(&g_repo, "https://github.com/libgit2/TestGitRepository", "./foo", &g_options),
+	cl_git_fail_with(git_clone(&g_repo, LIVE_REPO_URL, "./foo", &g_options),
 		GIT_ECERTIFICATE);
 
 #ifdef GIT_SSH
-	cl_git_fail_with(git_clone(&g_repo, "ssh://github.com/libgit2/TestGitRepository", "./foo", &g_options),
+	cl_git_fail_with(git_clone(&g_repo, SSH_REPO_URL, "./foo", &g_options),
 		GIT_ECERTIFICATE);
 #endif
-}
-
-static int succeed_certificate_check(git_cert *cert, int valid, const char *host, void *payload)
-{
-	GIT_UNUSED(cert);
-	GIT_UNUSED(valid);
-	GIT_UNUSED(payload);
-
-	cl_assert_equal_s("github.com", host);
-
-	return 0;
 }
 
 void test_online_clone__certificate_valid(void)
