@@ -432,19 +432,27 @@ static int request_creds(git_credential **out, ssh_subtransport *t, const char *
  */
 static int load_known_hosts(LIBSSH2_KNOWNHOSTS **hosts, LIBSSH2_SESSION *session)
 {
-	git_str path = GIT_STR_INIT, sshdir = GIT_STR_INIT;
+	git_str path = GIT_STR_INIT, hostsfile = GIT_STR_INIT;
 	LIBSSH2_KNOWNHOSTS *known_hosts = NULL;
 	int error;
 
 	GIT_ASSERT_ARG(hosts);
 
-	if ((error = git_sysdir_find_global_file(&sshdir, SSH_DIR)) < 0 ||
-	    (error = git_str_joinpath(&path, git_str_cstr(&sshdir), KNOWN_HOSTS_FILE)) < 0)
-		goto out;
-
 	if ((known_hosts = libssh2_knownhost_init(session)) == NULL) {
 		ssh_error(session, "error initializing known hosts");
 		error = -1;
+		goto out;
+	}
+
+	if ((error = git_str_joinpath(&hostsfile, SSH_DIR, KNOWN_HOSTS_FILE)) < 0)
+		goto out;
+
+	if ((error = git_sysdir_find_global_file(&path, git_str_cstr(&hostsfile))) < 0) {
+		if (error == GIT_ENOTFOUND) {
+			git_error_clear();
+			error = 0;
+		}
+
 		goto out;
 	}
 
@@ -453,15 +461,18 @@ static int load_known_hosts(LIBSSH2_KNOWNHOSTS **hosts, LIBSSH2_SESSION *session
 	 * host rather than an error.
 	 */
 	error = libssh2_knownhost_readfile(known_hosts, git_str_cstr(&path), LIBSSH2_KNOWNHOST_FILE_OPENSSH);
-	if (error == LIBSSH2_ERROR_FILE)
+
+	if (error == LIBSSH2_ERROR_FILE) {
 		error = 0;
-	if (error < 0)
+	} else if (error < 0) {
 		ssh_error(session, "error reading known_hosts");
+		error = -1;
+	}
 
 out:
 	*hosts = known_hosts;
 
-	git_str_clear(&sshdir);
+	git_str_clear(&hostsfile);
 	git_str_clear(&path);
 
 	return error;
