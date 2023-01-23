@@ -458,6 +458,16 @@ static int push_transfer_progress_cb(
 	return 0;
 }
 
+static int succeed_certificate_check(git_cert *cert, int valid, const char *host, void *payload)
+{
+	GIT_UNUSED(cert);
+	GIT_UNUSED(valid);
+	GIT_UNUSED(host);
+	GIT_UNUSED(payload);
+
+	return 0;
+}
+
 /**
  * Calls push and relists refs on remote to verify success.
  *
@@ -474,6 +484,7 @@ static void do_push(
 	expected_ref expected_refs[], size_t expected_refs_len,
 	int expected_ret, int check_progress_cb, int check_update_tips_cb)
 {
+	git_net_url url = GIT_NET_URL_INIT;
 	git_push_options opts = GIT_PUSH_OPTIONS_INIT;
 	size_t i;
 	int error;
@@ -481,6 +492,8 @@ static void do_push(
 	record_callbacks_data *data;
 
 	if (_remote) {
+		cl_git_pass(git_net_url_parse(&url, _remote_url));
+
 		/* Auto-detect the number of threads to use */
 		opts.pb_parallelism = 0;
 
@@ -490,6 +503,9 @@ static void do_push(
 		opts.callbacks.pack_progress = push_pack_progress_cb;
 		opts.callbacks.push_transfer_progress = push_transfer_progress_cb;
 		opts.callbacks.push_update_reference = record_push_status_cb;
+
+		if (strcmp(url.scheme, "ssh") == 0)
+			opts.callbacks.certificate_check = succeed_certificate_check;
 
 		if (refspecs_len) {
 			specs.count = refspecs_len;
@@ -528,6 +544,7 @@ static void do_push(
 
 	}
 
+	git_net_url_dispose(&url);
 }
 
 /* Call push_finish() without ever calling git_push_add_refspec() */
