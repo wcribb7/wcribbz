@@ -26,6 +26,7 @@
 #include "sysdir.h"
 #include "thread.h"
 #include "threadstate.h"
+#include "warning.h"
 #include "git2/global.h"
 #include "streams/registry.h"
 #include "streams/mbedtls.h"
@@ -431,6 +432,16 @@ int git_libgit2_opts(int key, ...)
 
 	case GIT_OPT_SET_HOMEDIR:
 		error = git_sysdir_set(GIT_SYSDIR_HOME, va_arg(ap, const char *));
+		break;
+
+	case GIT_OPT_SET_WARNING_CALLBACK:
+		git_warning__callback = va_arg(ap, int GIT_CALLBACK()(git_warning_t, void *, ...));
+		git_warning__data = va_arg(ap, void *);
+		break;
+
+	case GIT_OPT_GET_WARNING_CALLBACK:
+		*(va_arg(ap, int GIT_CALLBACK(*)(git_warning_t, void *, ...))) = git_warning__callback;
+		*(va_arg(ap, void **)) = git_warning__data;
 		break;
 
 	default:
