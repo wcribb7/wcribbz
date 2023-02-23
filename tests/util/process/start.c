@@ -141,7 +141,7 @@ void test_process_start__redirect_stdio(void)
 void test_process_start__catch_sigterm(void)
 {
 #ifndef GIT_WIN32
-	const char *args_array[] = { helloworld_cmd.ptr };
+	const char *args_array[] = { "/bin/cat" };
 
 	git_process *process;
 	git_process_options opts = GIT_PROCESS_OPTIONS_INIT;
