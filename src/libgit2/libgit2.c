@@ -30,6 +30,7 @@
 #include "streams/registry.h"
 #include "streams/mbedtls.h"
 #include "streams/openssl.h"
+#include "streams/schannel.h"
 #include "transports/smart.h"
 #include "transports/http.h"
 #include "transports/ssh.h"
@@ -80,6 +81,7 @@ int git_libgit2_init(void)
 		git_stream_registry_global_init,
 		git_openssl_stream_global_init,
 		git_mbedtls_stream_global_init,
+		git_schannel_stream_global_init,
 		git_mwindow_global_init,
 		git_pool_global_init,
 		git_libgit2_settings_global_init

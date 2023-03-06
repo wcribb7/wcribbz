@@ -19,6 +19,8 @@ if(USE_HTTPS)
 				message(STATUS "Security framework is too old, falling back to OpenSSL")
 				set(USE_HTTPS "OpenSSL")
 			endif()
+		elseif(USE_SCHANNEL)
+			set(USE_HTTPS "Schannel")
 		elseif(USE_WINHTTP)
 			set(USE_HTTPS "WinHTTP")
 		elseif(OPENSSL_FOUND)
@@ -106,6 +108,11 @@ if(USE_HTTPS)
 		# https://github.com/ARMmbed/mbedtls/issues/228
 		# For now, pass its link flags as our own
 		list(APPEND LIBGIT2_PC_LIBS ${MBEDTLS_LIBRARIES})
+	elseif(USE_HTTPS STREQUAL "Schannel")
+		set(GIT_SCHANNEL 1)
+
+		list(APPEND LIBGIT2_SYSTEM_LIBS "rpcrt4" "crypt32" "ole32" "secur32")
+		list(APPEND LIBGIT2_PC_LIBS "-lrpcrt4" "-lcrypt32" "-lole32" "-lsecur32")
 	elseif(USE_HTTPS STREQUAL "WinHTTP")
 		# WinHTTP setup was handled in the WinHTTP-specific block above
 	elseif(USE_HTTPS STREQUAL "OpenSSL-Dynamic")
