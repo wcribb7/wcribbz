@@ -67,7 +67,7 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 	*seed ^= ((uint64_t)GetCurrentProcessId() << 32);
 	*seed ^= ((uint64_t)GetCurrentThreadId() << 48);
 
-	convert.f = git__timer(); *seed ^= (convert.d);
+	*seed ^= git_time_monotonic();
 
 	/* Mix in the addresses of some functions and variables */
 	*seed ^= (((uint64_t)((uintptr_t)seed) << 32));
@@ -82,8 +82,11 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 {
 	struct timeval tv;
 	double loadavg[3];
-	bits convert;
 	int fd;
+
+# if defined(GIT_RAND_GETLOADAVG)
+	bits convert;
+# endif
 
 # if defined(GIT_RAND_GETENTROPY)
 	GIT_UNUSED((fd = 0));
@@ -131,7 +134,7 @@ GIT_INLINE(int) getseed(uint64_t *seed)
 	GIT_UNUSED(loadavg[0]);
 # endif
 
-	convert.f = git__timer(); *seed ^= (convert.d);
+	*seed ^= git_time_monotonic();
 
 	/* Mix in the addresses of some variables */
 	*seed ^= ((uint64_t)((size_t)((void *)seed)) << 32);

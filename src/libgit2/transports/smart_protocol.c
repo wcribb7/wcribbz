@@ -1017,7 +1017,7 @@ static int stream_thunk(void *buf, size_t size, void *data)
 		return error;
 
 	if (payload->cb) {
-		double current_time = git__timer();
+		double current_time = git_time_monotonic();
 		double elapsed = current_time - payload->last_progress_report_time;
 		payload->last_bytes += size;
 
