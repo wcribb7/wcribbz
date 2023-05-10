@@ -50,7 +50,7 @@ void record_callbacks_data_clear(record_callbacks_data *data);
  *
  * @param data (git_vector *) of updated_tip instances
  */
-int record_update_tips_cb(const char *refname, const git_oid *a, const git_oid *b, void *data);
+int record_update_tips_cb(const char *refname, const git_oid *a, const git_oid *b, git_refspec *spec, void *data);
 
 /**
  * Create a set of refspecs that deletes each of the inputs

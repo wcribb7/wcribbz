@@ -39,9 +39,13 @@ void test_online_fetch__cleanup(void)
 	git__free(_remote_redirect_subsequent);
 }
 
-static int update_tips(const char *refname, const git_oid *a, const git_oid *b, void *data)
+static int update_tips(const char *refname, const git_oid *a, const git_oid *b, git_refspec *spec, void *data)
 {
-	GIT_UNUSED(refname); GIT_UNUSED(a); GIT_UNUSED(b); GIT_UNUSED(data);
+	GIT_UNUSED(refname);
+	GIT_UNUSED(a);
+	GIT_UNUSED(b);
+	GIT_UNUSED(spec);
+	GIT_UNUSED(data);
 
 	++counter;
 

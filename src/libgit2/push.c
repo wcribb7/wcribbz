@@ -215,10 +215,12 @@ int git_push_update_tips(git_push *push, const git_remote_callbacks *callbacks)
 
 		if (fire_callback && callbacks && callbacks->update_tips) {
 			error = callbacks->update_tips(git_str_cstr(&remote_ref_name),
-						&push_spec->roid, &push_spec->loid, callbacks->payload);
+						&push_spec->roid, &push_spec->loid, &push_spec->refspec, callbacks->payload);
 
-			if (error < 0)
+			if (error < 0) {
+				git_error_set_after_callback_function(error, "git_remote_push");
 				goto on_error;
+			}
 		}
 	}
 

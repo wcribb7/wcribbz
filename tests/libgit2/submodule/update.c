@@ -71,13 +71,14 @@ static int checkout_notify_cb(
 	return 0;
 }
 
-static int update_tips(const char *refname, const git_oid *a, const git_oid *b, void *data)
+static int update_tips(const char *refname, const git_oid *a, const git_oid *b, git_refspec *spec, void *data)
 {
 	struct update_submodule_cb_payload *update_payload = data;
 
 	GIT_UNUSED(refname);
 	GIT_UNUSED(a);
 	GIT_UNUSED(b);
+	GIT_UNUSED(spec);
 
 	update_payload->update_tips_called = 1;
 

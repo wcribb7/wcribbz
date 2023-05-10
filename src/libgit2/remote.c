@@ -1716,11 +1716,12 @@ int git_remote_prune(git_remote *remote, const git_remote_callbacks *callbacks)
 		if (error < 0)
 			goto cleanup;
 
-		if (callbacks && callbacks->update_tips)
-			error = callbacks->update_tips(refname, &id, &zero_id, callbacks->payload);
-
-		if (error < 0)
+		if (callbacks && callbacks->update_tips &&
+		    (error = callbacks->update_tips(refname, &id, &zero_id,
+				NULL, callbacks->payload)) < 0) {
+			git_error_set_after_callback_function(error, "git_remote_fetch");
 			goto cleanup;
+		}
 	}
 
 cleanup:
@@ -1733,6 +1734,7 @@ static int update_ref(
 	const git_remote *remote,
 	const char *ref_name,
 	git_oid *id,
+	git_refspec *spec,
 	const char *msg,
 	const git_remote_callbacks *callbacks)
 {
@@ -1762,8 +1764,8 @@ static int update_ref(
 		return error;
 
 	if (callbacks && callbacks->update_tips &&
-	    (error = callbacks->update_tips(ref_name, &old_id, id, callbacks->payload)) < 0)
-		return error;
+	    (error = callbacks->update_tips(ref_name, &old_id, id, spec, callbacks->payload)) < 0)
+		git_error_set_after_callback_function(error, "git_remote_fetch");
 
 	return 0;
 }
@@ -1870,7 +1872,8 @@ static int update_one_tip(
 	}
 
 	if (callbacks && callbacks->update_tips != NULL &&
-	    (error = callbacks->update_tips(refname.ptr, &old, &head->oid, callbacks->payload)) < 0)
+	    (error = callbacks->update_tips(refname.ptr, &old,
+			&head->oid, spec, callbacks->payload)) < 0)
 		git_error_set_after_callback_function(error, "git_remote_fetch");
 
 done:
@@ -1917,7 +1920,7 @@ static int update_tips_for_spec(
 			goto on_error;
 
 		if (spec->dst &&
-		     (error = update_ref(remote, spec->dst, &id, log_message, callbacks)) < 0)
+		     (error = update_ref(remote, spec->dst, &id, spec, log_message, callbacks)) < 0)
 			goto on_error;
 
 		git_oid_cpy(&oid_head.oid, &id);
@@ -2029,7 +2032,7 @@ static int opportunistic_updates(
 
 		git_str_clear(&refname);
 		if ((error = git_refspec__transform(&refname, spec, head->name)) < 0 ||
-		    (error = update_ref(remote, refname.ptr, &head->oid, msg, callbacks)) < 0)
+		    (error = update_ref(remote, refname.ptr, &head->oid, spec, msg, callbacks)) < 0)
 			goto cleanup;
 	}
 

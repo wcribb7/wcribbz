@@ -281,10 +281,10 @@ void test_online_clone__clone_mirror(void)
 	cl_fixture_cleanup("./foo.git");
 }
 
-static int update_tips(const char *refname, const git_oid *a, const git_oid *b, void *payload)
+static int update_tips(const char *refname, const git_oid *a, const git_oid *b, git_refspec *spec, void *payload)
 {
 	int *callcount = (int*)payload;
-	GIT_UNUSED(refname); GIT_UNUSED(a); GIT_UNUSED(b);
+	GIT_UNUSED(refname); GIT_UNUSED(a); GIT_UNUSED(b); GIT_UNUSED(spec);
 	*callcount = *callcount + 1;
 	return 0;
 }

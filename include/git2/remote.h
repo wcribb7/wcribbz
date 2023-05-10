@@ -557,7 +557,8 @@ struct git_remote_callbacks {
 	 * Completion is called when different parts of the download
 	 * process are done (currently unused).
 	 */
-	int GIT_CALLBACK(completion)(git_remote_completion_t type, void *data);
+	int GIT_CALLBACK(completion)(git_remote_completion_t type,
+		void *data);
 
 	/**
 	 * This will be called if the remote host requires
@@ -587,7 +588,9 @@ struct git_remote_callbacks {
 	 * Each time a reference is updated locally, this function
 	 * will be called with information about it.
 	 */
-	int GIT_CALLBACK(update_tips)(const char *refname, const git_oid *a, const git_oid *b, void *data);
+	int GIT_CALLBACK(update_tips)(const char *refname,
+		const git_oid *a, const git_oid *b, git_refspec *spec,
+		void *data);
 
 	/**
 	 * Function to call with progress information during pack

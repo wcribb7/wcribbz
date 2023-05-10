@@ -108,11 +108,12 @@ void test_network_fetchlocal__prune(void)
 	git_repository_free(repo);
 }
 
-static int update_tips_fail_on_call(const char *ref, const git_oid *old, const git_oid *new, void *data)
+static int update_tips_fail_on_call(const char *ref, const git_oid *old, const git_oid *new, git_refspec *refspec, void *data)
 {
 	GIT_UNUSED(ref);
 	GIT_UNUSED(old);
 	GIT_UNUSED(new);
+	GIT_UNUSED(refspec);
 	GIT_UNUSED(data);
 
 	cl_fail("update tips called");
@@ -510,13 +511,14 @@ void test_network_fetchlocal__prune_load_fetch_prune_config(void)
 	git_repository_free(repo);
 }
 
-static int update_tips_error(const char *ref, const git_oid *old, const git_oid *new, void *data)
+static int update_tips_error(const char *ref, const git_oid *old, const git_oid *new, git_refspec *refspec, void *data)
 {
 	int *callcount = (int *) data;
 
 	GIT_UNUSED(ref);
 	GIT_UNUSED(old);
 	GIT_UNUSED(new);
+	GIT_UNUSED(refspec);
 
 	(*callcount)++;
 
