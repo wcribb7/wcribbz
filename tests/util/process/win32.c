@@ -3,13 +3,10 @@
 #include "vector.h"
 
 #ifdef GIT_WIN32
-static git_strarray input;
 static git_str result;
 
 # define assert_cmdline(expected, given) do { \
-		input.count = ARRAY_SIZE(given); \
-		input.strings = given; \
-		cl_git_pass(git_process__cmdline(&result, &input)); \
+		cl_git_pass(git_process__cmdline(&result, given, ARRAY_SIZE(given))); \
 		cl_assert_equal_s(expected, result.ptr); \
 		git_str_dispose(&result); \
 	} while(0)
