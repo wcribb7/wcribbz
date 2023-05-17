@@ -1,4 +1,5 @@
 if(USE_SSH STREQUAL "exec")
+	set(GIT_SSH 1)
 	set(GIT_SSH_EXEC 1)
 
 	add_feature_info(SSH ON "using OpenSSH exec support")
