@@ -15,10 +15,10 @@ static git_str result;
 void test_process_win32__cmdline_is_whitespace_delimited(void)
 {
 #ifdef GIT_WIN32
-	char *one[] = { "one" };
-	char *two[] = { "one", "two" };
-	char *three[] = { "one", "two", "three" };
-	char *four[] = { "one", "two", "three", "four" };
+	const char *one[] = { "one" };
+	const char *two[] = { "one", "two" };
+	const char *three[] = { "one", "two", "three" };
+	const char *four[] = { "one", "two", "three", "four" };
 
 	assert_cmdline("one", one);
 	assert_cmdline("one two", two);
@@ -30,9 +30,9 @@ void test_process_win32__cmdline_is_whitespace_delimited(void)
 void test_process_win32__cmdline_escapes_whitespace(void)
 {
 #ifdef GIT_WIN32
-	char *spaces[] = { "one with spaces" };
-	char *tabs[] = { "one\twith\ttabs" };
-	char *multiple[] = { "one    with    many    spaces" };
+	const char *spaces[] = { "one with spaces" };
+	const char *tabs[] = { "one\twith\ttabs" };
+	const char *multiple[] = { "one    with    many    spaces" };
 
 	assert_cmdline("one\" \"with\" \"spaces", spaces);
 	assert_cmdline("one\"\t\"with\"\t\"tabs", tabs);
@@ -43,7 +43,7 @@ void test_process_win32__cmdline_escapes_whitespace(void)
 void test_process_win32__cmdline_escapes_quotes(void)
 {
 #ifdef GIT_WIN32
-	char *one[] = { "echo", "\"hello world\"" };
+	const char *one[] = { "echo", "\"hello world\"" };
 
 	assert_cmdline("echo \\\"hello\" \"world\\\"", one);
 #endif
@@ -52,8 +52,8 @@ void test_process_win32__cmdline_escapes_quotes(void)
 void test_process_win32__cmdline_escapes_backslash(void)
 {
 #ifdef GIT_WIN32
-	char *one[] = { "foo\\bar", "foo\\baz" };
-	char *two[] = { "c:\\program files\\foo bar\\foo bar.exe", "c:\\path\\to\\other\\", "/a", "/b" };
+	const char *one[] = { "foo\\bar", "foo\\baz" };
+	const char *two[] = { "c:\\program files\\foo bar\\foo bar.exe", "c:\\path\\to\\other\\", "/a", "/b" };
 
 	assert_cmdline("foo\\\\bar foo\\\\baz", one);
 	assert_cmdline("c:\\\\program\" \"files\\\\foo\" \"bar\\\\foo\" \"bar.exe c:\\\\path\\\\to\\\\other\\\\ /a /b", two);
