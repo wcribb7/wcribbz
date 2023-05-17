@@ -12,6 +12,10 @@
 #include "process.h"
 #include "strlist.h"
 
+#ifndef DWORD_MAX
+# define DWORD_MAX INT32_MAX
+#endif
+
 #define ENV_MAX 32767
 
 struct git_process {
