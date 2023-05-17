@@ -10,7 +10,7 @@
 
 #include "git2_util.h"
 #include "process.h"
-#include "git2/strarray.h"
+#include "strlist.h"
 
 #define ENV_MAX 32767
 
