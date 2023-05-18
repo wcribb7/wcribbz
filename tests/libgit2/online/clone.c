@@ -654,7 +654,7 @@ void test_online_clone__ssh_auth_methods(void)
 {
 	int with_user;
 
-#ifndef GIT_SSH
+#ifndef GIT_SSH_LIBSSH2
 	clar__skip();
 #endif
 	g_options.fetch_opts.callbacks.credentials = check_ssh_auth_methods;
@@ -912,7 +912,7 @@ void test_online_clone__certificate_invalid(void)
 	cl_git_fail_with(GIT_ECERTIFICATE,
 		git_clone(&g_repo, "https://github.com/libgit2/TestGitRepository", "./foo", &g_options));
 
-#ifdef GIT_SSH
+#ifdef GIT_SSH_LIBSSH2
 	cl_git_fail_with(GIT_ECERTIFICATE,
 		git_clone(&g_repo, "ssh://github.com/libgit2/TestGitRepository", "./foo", &g_options));
 #endif
