@@ -118,12 +118,12 @@ static int start_ssh(
 	git_smart_service_t action,
 	const char *sshpath)
 {
-	const char *args[4];
+	const char *args[6];
 	const char *env[] = { "GIT_DIR=" };
 
 	git_process_options process_opts = GIT_PROCESS_OPTIONS_INIT;
 	git_net_url url = GIT_NET_URL_INIT;
-	git_str userhost = GIT_BUF_INIT;
+	git_str userhost = GIT_STR_INIT;
 	const char *command;
 	int error;
 
@@ -159,9 +159,11 @@ static int start_ssh(
 	git_str_puts(&userhost, url.host);
 
 	args[0] = "/usr/bin/ssh";
-	args[1] = userhost.ptr;
-	args[2] = command;
-	args[3] = url.path;
+	args[1] = "-p";
+	args[2] = url.port;
+	args[3] = userhost.ptr;
+	args[4] = command;
+	args[5] = url.path;
 
 	if ((error = git_process_new(&transport->process, args, ARRAY_SIZE(args), env, ARRAY_SIZE(env), &process_opts)) < 0 ||
 	    (error = git_process_start(transport->process)) < 0) {
