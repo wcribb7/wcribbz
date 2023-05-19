@@ -101,10 +101,12 @@ static int ssh_exec_subtransport_stream_init(
 
 GIT_INLINE(int) ensure_transport_state(
 	ssh_exec_subtransport *transport,
-	git_smart_service_t expected)
+	git_smart_service_t expected,
+	git_smart_service_t next)
 {
-	if (transport->action != expected) {
+	if (transport->action != expected && transport->action != next) {
 		git_error_set(GIT_ERROR_NET, "invalid transport state");
+
 		return -1;
 	}
 
@@ -188,7 +190,7 @@ static int ssh_exec_subtransport_action(
 	switch (action) {
 	case GIT_SERVICE_UPLOADPACK_LS:
 	case GIT_SERVICE_RECEIVEPACK_LS:
-		if ((error = ensure_transport_state(transport, 0)) < 0 ||
+		if ((error = ensure_transport_state(transport, 0, 0)) < 0 ||
 		    (error = ssh_exec_subtransport_stream_init(&stream, transport)) < 0 ||
 		    (error = start_ssh(transport, action, sshpath)) < 0)
 		    goto on_error;
@@ -201,7 +203,7 @@ static int ssh_exec_subtransport_action(
 		expected = (action == GIT_SERVICE_UPLOADPACK) ?
 			GIT_SERVICE_UPLOADPACK_LS : GIT_SERVICE_RECEIVEPACK_LS;
 
-		if ((error = ensure_transport_state(transport, expected)) < 0)
+		if ((error = ensure_transport_state(transport, expected, action)) < 0)
 			goto on_error;
 
 		break;
@@ -232,6 +234,8 @@ static int ssh_exec_subtransport_close(git_smart_subtransport *t)
 		git_process_free(transport->process);
 		transport->process = NULL;
 	}
+
+	transport->action = 0;
 
 	return 0;
 }
