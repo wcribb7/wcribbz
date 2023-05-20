@@ -45,8 +45,12 @@ static int ssh_exec_subtransport_stream_read(
 
 	transport = (ssh_exec_subtransport *)stream->parent.subtransport;
 
-	if ((ret = git_process_read(transport->process, buffer, buf_size)) < 0)
+	if ((ret = git_process_read(transport->process, buffer, buf_size)) < 0) {
+		printf("ret: %d\n", (int)ret);
 		return (int)ret;
+	}
+
+	printf("rettt: %d\n", ret);
 
 	*bytes_read = (size_t)ret;
 	return 0;
@@ -129,7 +133,7 @@ static int start_ssh(
 
 	process_opts.capture_in = 1;
 	process_opts.capture_out = 1;
-	process_opts.capture_err = 1;
+	process_opts.capture_err = 0;
 
 	switch (action) {
 	case GIT_SERVICE_UPLOADPACK_LS:
