@@ -92,6 +92,13 @@ static int merge_env(
 		goto on_error;
 	}
 
+	{
+	size_t i;
+	const char *s;
+	git_vector_foreach(&merged, i, s)
+		printf("%s\n", s);
+	}
+
 	git_vector_insert(&merged, NULL);
 
 	*out = (char **)merged.contents;

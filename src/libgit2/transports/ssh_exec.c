@@ -119,7 +119,7 @@ static int start_ssh(
 	git_smart_service_t action,
 	const char *sshpath)
 {
-	const char *args[6];
+	const char *args[10];
 	const char *env[] = { "GIT_DIR=" };
 
 	git_process_options process_opts = GIT_PROCESS_OPTIONS_INIT;
@@ -127,6 +127,8 @@ static int start_ssh(
 	git_str userhost = GIT_STR_INIT;
 	const char *command;
 	int error;
+
+	git_str zz = GIT_STR_INIT, yy=GIT_STR_INIT, xx=GIT_STR_INIT;
 
 	process_opts.capture_in = 1;
 	process_opts.capture_out = 1;
@@ -159,12 +161,27 @@ static int start_ssh(
 	}
 	git_str_puts(&userhost, url.host);
 
+	git__getenv(&yy, "HOME");
+	git_str_puts(&zz, "UserKnownHostsFile=");
+	git_str_puts(&zz, yy.ptr);
+	git_str_puts(&zz, "/.ssh/known_hosts");
+
+	git_str_puts(&xx, yy.ptr);
+	git_str_puts(&xx, "/.ssh/id_rsa");
+
+	printf("%s\n", zz.ptr);
+	printf("%s\n", xx.ptr);
+
 	args[0] = "/usr/bin/ssh";
-	args[1] = "-p";
-	args[2] = url.port;
-	args[3] = userhost.ptr;
-	args[4] = command;
-	args[5] = url.path;
+	args[1] = "-o";
+	args[2] = zz.ptr;
+	args[3] = "-i";
+	args[4] = xx.ptr;
+	args[5] = "-p";
+	args[6] = url.port;
+	args[7] = userhost.ptr;
+	args[8] = command;
+	args[9] = url.path;
 
 	if ((error = git_process_new(&transport->process, args, ARRAY_SIZE(args), env, ARRAY_SIZE(env), &process_opts)) < 0 ||
 	    (error = git_process_start(transport->process)) < 0) {
