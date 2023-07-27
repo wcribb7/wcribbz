@@ -48,6 +48,9 @@ static char *_orig_http_proxy = NULL;
 static char *_orig_https_proxy = NULL;
 static char *_orig_no_proxy = NULL;
 
+static char *_ssh_cmd = NULL;
+static char *_orig_ssh_cmd = NULL;
+
 static int ssl_cert(git_cert *cert, int valid, const char *host, void *payload)
 {
 	GIT_UNUSED(cert);
@@ -99,6 +102,14 @@ void test_online_clone__initialize(void)
 	_github_ssh_passphrase = cl_getenv("GITTEST_GITHUB_SSH_PASSPHRASE");
 	_github_ssh_remotehostkey = cl_getenv("GITTEST_GITHUB_SSH_REMOTE_HOSTKEY");
 
+	_orig_ssh_cmd = cl_getenv("GIT_SSH");
+	_ssh_cmd = cl_getenv("GITTEST_SSH_CMD");
+
+	if (_ssh_cmd)
+		cl_setenv("GIT_SSH", _ssh_cmd);
+	else
+		cl_setenv("GIT_SSH", NULL);
+
 	if (_remote_expectcontinue)
 		git_libgit2_opts(GIT_OPT_ENABLE_HTTP_EXPECT_CONTINUE, 1);
 
@@ -149,6 +160,11 @@ void test_online_clone__cleanup(void)
 		git__free(_orig_https_proxy);
 		git__free(_orig_no_proxy);
 	}
+
+	cl_setenv("GIT_SSH", _orig_ssh_cmd);
+	git__free(_orig_ssh_cmd);
+
+	git__free(_ssh_cmd);
 
 	git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, NULL, NULL);
 	git_libgit2_opts(GIT_OPT_SET_SERVER_TIMEOUT, 0);
