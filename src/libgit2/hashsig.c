@@ -148,7 +148,7 @@ static int hashsig_in_progress_init(
 		prog->use_ignores = 1;
 	} else if (sig->opt & GIT_HASHSIG_SMART_WHITESPACE) {
 		for (i = 0; i < 256; ++i)
-			prog->ignore_ch[i] = git__isspace(i);
+			prog->ignore_ch[i] = !!git__isspace(i);
 		prog->use_ignores = 1;
 	} else {
 		memset(prog, 0, sizeof(*prog));
