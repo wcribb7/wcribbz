@@ -280,3 +280,27 @@ void test_path_win32__8dot3_name(void)
 	git__free(shortname);
 #endif
 }
+
+void test_path_win32__realpath(void)
+{
+	git_str expected = GIT_STR_INIT;
+	char result[GIT_PATH_MAX];
+
+	/* Ensure relative paths become absolute */
+	cl_must_pass(git_str_joinpath(&expected, clar_sandbox_path(), "abcdef"));
+	cl_must_pass(p_mkdir("abcdef", 0777));
+	cl_assert(p_realpath("./abcdef", result) != NULL);
+	cl_assert_equal_s(expected.ptr, result);
+
+	/* Ensure case is canonicalized */
+	git_str_clear(&expected);
+	cl_must_pass(git_str_joinpath(&expected, clar_sandbox_path(), "FOO"));
+	cl_must_pass(p_mkdir("FOO", 0777));
+	cl_assert(p_realpath("foo", result) != NULL);
+	cl_assert_equal_s(expected.ptr, result);
+
+	cl_assert(p_realpath("nonexistent", result) == NULL);
+	cl_assert_equal_i(ENOENT, errno);
+
+	git_str_dispose(&expected);
+}
