@@ -92,10 +92,7 @@ int git_mbedtls_stream_global_init(void)
 	}
 
 	/* configure TLSv1 */
-	#if MBEDTLS_VERSION_MAJOR < 3
-		/* SSLv3 is not included in mbedtls3 */
-		mbedtls_ssl_conf_min_version(&mbedtls_config, MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_0);
-	#endif
+	mbedtls_ssl_conf_min_version(&mbedtls_config, MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_3);
 
 	/* verify_server_cert is responsible for making the check.
 	 * OPTIONAL because REQUIRED drops the certificate as soon as the check
